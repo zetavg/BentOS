@@ -1,0 +1,20 @@
+<% host_url = ENV['HOST_URL'].presence || ENV['HEROKU_APP_NAME'] && "https://#{ENV['HEROKU_APP_NAME']}.herokuapp.com/" || 'http://localhost:3000/' %>
+
+default: &default
+  # The public URL, hostname and port of the application.
+  url: <%= uri = URI.parse(host_url); uri.path = ''; uri %>
+  host: <%= URI.parse(host_url).host %>
+  port: <%= URI.parse(host_url).port %>
+
+  # Used as the base secret in the application, including all MessageVerifiers
+  # in Rails, such as the one protecting cookies.
+  secret_key: <%= ENV['SECRET_KEY'].presence || SecureRandom.hex(64) %>
+
+development:
+  <<: *default
+
+production:
+  <<: *default
+
+test:
+  <<: *default

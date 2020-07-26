@@ -32,4 +32,13 @@ module BentOS
     # Don't generate system test files.
     config.generators.system_tests = nil
   end
+
+  # This is used as the SSOT of our application configuration
+  class Config < Settingslogic
+    # Load the application config from config/application.yml
+    source File.expand_path('application.yml', __dir__)
+
+    # Use the current Rails envirement as the config namespace
+    namespace Rails.env
+  end
 end

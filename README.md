@@ -1,24 +1,12 @@
-# README
+# BentOS
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+The **Bento** **O**peration **S**ystem.
 
-Things you may want to cover:
+## Requirements
 
-* Ruby version
+* Ruby 2.7
 
-* System dependencies
+## Setup
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+1. Run `bin/setup`.
+2. Edit `.env`.
