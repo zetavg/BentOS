@@ -1,6 +1,10 @@
 <% host_url = ENV['HOST_URL'].presence || ENV['HEROKU_APP_NAME'] && "https://#{ENV['HEROKU_APP_NAME']}.herokuapp.com/" || 'http://localhost:3000/' %>
+<% app_name = ENV['APP_NAME'].presence || 'BentOS' %>
 
 default: &default
+  # The application name which will be used in titles and e-mails.
+  app_name: <%= app_name %>
+
   # The public URL, hostname and port of the application.
   url: <%= uri = URI.parse(host_url); uri.path = ''; uri %>
   host: <%= URI.parse(host_url).host %>
@@ -9,6 +13,11 @@ default: &default
   # Used as the base secret in the application, including all MessageVerifiers
   # in Rails, such as the one protecting cookies.
   secret_key: <%= ENV['SECRET_KEY'].presence || SecureRandom.hex(64) %>
+
+  user_center:
+    # The e-mail sender address which will be used for user authentication
+    # or profile related emails, such as Devise::Mailer.
+    mailer_sender: <%= ENV['USER_CENTER_MAILER_SENDER'].presence || "#{app_name} <user_center@#{URI.parse(host_url).host}>" %>
 
 development:
   <<: *default

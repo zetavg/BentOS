@@ -30,6 +30,9 @@ gem 'amazing_print'
 gem 'settingslogic'
 gem 'dotenv-rails'
 
+# User authentication
+gem 'devise'
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
