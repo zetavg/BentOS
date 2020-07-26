@@ -39,3 +39,9 @@
 /yarn-error.log
 yarn-debug.log*
 .yarn-integrity
+
+# Ignore RSpec state persisting file
+/spec/examples.txt
+
+# Ignore test coverage report files
+/coverage/*
