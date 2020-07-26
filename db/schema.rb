@@ -10,11 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_25_000001) do
+ActiveRecord::Schema.define(version: 2020_07_25_000002) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "user_oauth_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id"
+    t.string "provider", null: false
+    t.string "uid", null: false
+    t.string "access_token"
+    t.datetime "access_token_expires_at"
+    t.string "refresh_token"
+    t.jsonb "data"
+    t.boolean "sync_data", default: false, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["provider", "uid"], name: "index_user_oauth_authentications_on_provider_and_uid", unique: true
+    t.index ["user_id"], name: "index_user_oauth_authentications_on_user_id"
+  end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
@@ -44,4 +59,5 @@ ActiveRecord::Schema.define(version: 2020_07_25_000001) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "user_oauth_authentications", "users"
 end

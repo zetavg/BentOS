@@ -19,6 +19,15 @@ default: &default
     # or profile related emails, such as Devise::Mailer.
     mailer_sender: <%= ENV['USER_CENTER_MAILER_SENDER'].presence || "#{app_name} <user_center@#{URI.parse(host_url).host}>" %>
 
+    # User authentication OAuth provider configurations.
+    oauth:
+      # Google OAuth.
+      # Redirect URI: "[host_url]/users/auth/google_oauth2/callback".
+      google:
+        enable: <%= ENV['OAUTH_GOOGLE_CLIENT_ID'].present? && ENV['OAUTH_GOOGLE_CLIENT_SECRET'].present? %>
+        client_id: <%= ENV['OAUTH_GOOGLE_CLIENT_ID'] %>
+        client_secret: <%= ENV['OAUTH_GOOGLE_CLIENT_SECRET'] %>
+
 development:
   <<: *default
 
