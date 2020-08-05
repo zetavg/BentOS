@@ -2,3 +2,9 @@
   vertical-align: top;
   max-width: 24px;
 }
+
+.flash-messages {
+  > *:first-child {
+    margin-top: 1rem;
+  }
+}

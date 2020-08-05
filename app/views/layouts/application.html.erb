@@ -11,6 +11,7 @@
 
   <body>
     <%= render 'common/navbar' %>
+    <%= render 'common/flash_messages' %>
 
     <% flash.each do |type, message| %>
       <p class="<%= type %>"><%= message %></p>
