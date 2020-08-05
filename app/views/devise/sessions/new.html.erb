@@ -1,26 +1,84 @@
-<h2>Log in</h2>
+<style type="text/css">
+  html,
+  body {
+    height: 100%;
+  }
 
-<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-  </div>
+  body {
+    display: flex;
+    align-items: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #f5f5f5;
+    text-align: center;
+  }
 
-  <div class="field">
-    <%= f.label :password %><br />
-    <%= f.password_field :password, autocomplete: "current-password" %>
-  </div>
+  .flash-messages {
+    margin-top: -40px;
+  }
 
+  .app-name {
+    font-size: 52px;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+
+  .form-signin {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: auto;
+  }
+  .form-signin .checkbox {
+    font-weight: 400;
+  }
+  .form-signin .form-control {
+    position: relative;
+    box-sizing: border-box;
+    height: auto;
+    padding: 10px;
+    font-size: 16px;
+  }
+  .form-signin .form-control:focus {
+    z-index: 2;
+  }
+  .form-signin input[type="email"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .form-signin input[type="password"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .links {
+    margin-top: 1rem;
+  }
+</style>
+
+<%= render 'common/flash_messages' %>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: 'form-signin' }) do |f| %>
+  <div class="app-name"><%= BentOS::Config.app_name %></div>
+
+  <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+
+  <%= f.email_field :email, class: 'form-control', placeholder: true, autofocus: true, autocomplete: 'email' %>
+  <%= f.password_field :password, class: 'form-control', placeholder: true, autocomplete: 'current-password' %>
   <% if devise_mapping.rememberable? %>
-    <div class="field">
+    <div class="checkbox mb-3">
       <%= f.check_box :remember_me %>
       <%= f.label :remember_me %>
     </div>
   <% end %>
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 
-  <div class="actions">
-    <%= f.submit "Log in" %>
+  <div class="links">
+    <%= render "devise/shared/links" %>
   </div>
-<% end %>
 
-<%= render "devise/shared/links" %>
+  <p class="mt-5 mb-3 text-muted"><%= BentOS::Config.app_slogan.html_safe %></p>
+<% end %>
