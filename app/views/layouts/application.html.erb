@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100">
   <head>
     <title>BentOS</title>
     <%= csrf_meta_tags %>
@@ -9,25 +9,14 @@
     <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
   </head>
 
-  <body>
+  <body class="d-flex flex-column h-100">
     <%= render 'common/navbar' %>
     <%= render 'common/flash_messages' %>
 
-    <% flash.each do |type, message| %>
-      <p class="<%= type %>"><%= message %></p>
-    <% end %>
+    <main class="flex-shrink-0">
+      <%= yield %>
+    </main>
 
-    <%= yield %>
-
-    <div>
-      <% if user_signed_in? %>
-        <%= link_to('Logout', destroy_user_session_path, method: :delete) %>
-      <% else %>
-        <%= link_to('Login', new_user_session_path) %>
-        <% if defined? user_google_omniauth_authorize_path %>
-          <%= link_to "Sign in with Google", user_google_omniauth_authorize_path %>
-        <% end %>
-      <% end %>
-    </div>
+    <%= render 'common/footer' %>
   </body>
 </html>
