@@ -10,6 +10,8 @@
   </head>
 
   <body>
+    <%= render 'common/navbar' %>
+
     <% flash.each do |type, message| %>
       <p class="<%= type %>"><%= message %></p>
     <% end %>
