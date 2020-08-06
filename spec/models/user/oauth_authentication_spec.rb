@@ -55,7 +55,6 @@ RSpec.describe User::OAuthAuthentication, type: :model do
             access_token: access_token,
             access_token_expires_at: access_token_expires_at,
             refresh_token: refresh_token,
-            displayed_provider_name: 'Google',
             user_email: user_email,
             user_name: user_name,
             user_picture_url: user_picture_url
@@ -79,7 +78,6 @@ RSpec.describe User::OAuthAuthentication, type: :model do
             access_token: access_token,
             access_token_expires_at: access_token_expires_at,
             refresh_token: refresh_token,
-            displayed_provider_name: 'Google',
             user_email: user_email,
             user_name: user_name,
             user_picture_url: user_picture_url

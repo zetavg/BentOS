@@ -31,6 +31,7 @@ default: &default
         enable: <%= ENV['OAUTH_GOOGLE_CLIENT_ID'].present? && ENV['OAUTH_GOOGLE_CLIENT_SECRET'].present? %>
         client_id: <%= ENV['OAUTH_GOOGLE_CLIENT_ID'] %>
         client_secret: <%= ENV['OAUTH_GOOGLE_CLIENT_SECRET'] %>
+        display_name: <%= ENV['OAUTH_GOOGLE_DISPLAY_NAME'].presence || 'Google' %>
 
 development:
   <<: *default

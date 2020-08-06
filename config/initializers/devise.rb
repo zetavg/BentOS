@@ -274,6 +274,7 @@ Devise.setup do |config|
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
   if BentOS::Config.user_center.oauth.google.enable
     config.omniauth :google_oauth2, BentOS::Config.user_center.oauth.google.client_id, BentOS::Config.user_center.oauth.google.client_secret
+    BentOS::Config.user_center.oauth[:google][:provider] = :google_oauth2
   end
 
   # ==> Warden configuration

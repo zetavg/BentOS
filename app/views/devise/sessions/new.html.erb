@@ -61,6 +61,8 @@
 
 <%= render 'common/flash_messages' %>
 
+<% @enabled_oauth_configs = BentOS::Config.user_center.oauth.map { |n, h| [n, h] }.filter { |_, h| h['enable'] }.map { |n, h| h.merge('name' => n, 'provider' => BentOS::Config.user_center.oauth[n][:provider] || n) } %>
+
 <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: 'form-signin' }) do |f| %>
   <div class="app-name"><%= BentOS::Config.app_name %></div>
 
@@ -75,6 +77,13 @@
     </div>
   <% end %>
   <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+
+  <% if @enabled_oauth_configs.present? %>
+    <hr />
+    <% @enabled_oauth_configs.each do |oauth_config| %>
+      <%= link_to "Sign in with #{oauth_config['display_name']}", omniauth_authorize_path(resource_name, oauth_config['provider']), class: 'btn btn-lg btn-secondary btn-block' %>
+    <% end %>
+  <% end %>
 
   <div class="links">
     <%= render "devise/shared/links" %>
