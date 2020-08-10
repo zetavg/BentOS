@@ -1,5 +1,13 @@
 require 'simplecov'
+require 'coveralls'
+
 SimpleCov.start 'rails'
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
+  [
+    SimpleCov::Formatter::HTMLFormatter,
+    Coveralls::SimpleCov::Formatter
+  ]
+)
 
 # Conventionally, all specs live under a `spec` directory, which RSpec adds to
 # the `$LOAD_PATH`. The generated `.rspec` file contains `--require spec_helper`

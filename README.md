@@ -1,4 +1,4 @@
-# BentOS
+# BentOS [![Build Status](https://travis-ci.org/zetavg/BentOS.svg?branch=master)](https://travis-ci.org/zetavg/BentOS) [![Coverage Status](https://coveralls.io/repos/github/zetavg/BentOS/badge.svg?branch=master)](https://coveralls.io/github/zetavg/BentOS?branch=master)
 
 The **Bento** **O**peration **S**ystem.
 

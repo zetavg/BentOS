@@ -4,7 +4,7 @@ default: &default
   adapter: postgresql
   encoding: unicode
   host: localhost
-  port: 5432
+  port: 5432 # on some installations, the default port for PostgreSQL might be 5433 instead of 5432
   username: postgres
   password:
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>

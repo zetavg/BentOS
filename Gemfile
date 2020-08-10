@@ -53,6 +53,7 @@ group :development, :test do
   gem 'database_rewinder'
 
   gem 'simplecov', require: false
+  gem 'coveralls', '~> 0.8', require: false
 end
 
 group :development do

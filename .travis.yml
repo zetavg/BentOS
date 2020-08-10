@@ -1,0 +1,36 @@
+language: ruby
+rvm: 2.7.0
+cache:
+  bundler: true
+  yarn: true
+  directories:
+    - ~/.rvm/gems/ruby-2.7.0
+    - ~/.nvm
+    - node_modules
+env:
+  jobs:
+    - TEST_TYPE=rspec
+    - TEST_TYPE=rubocop
+    - TEST_TYPE=eslint
+before_install:
+  - "sudo apt-get update"
+  # PostgreSQL
+  - "sudo apt-get --yes remove postgresql\\*"
+  - "sudo apt-get install -y postgresql-12 postgresql-client-12"
+  - "sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf"
+  - "sudo cp /etc/postgresql/{9.6,12}/main/pg_hba.conf"
+  - "sudo service postgresql restart 12 || :"
+  # Ruby
+  - "gem update --system"
+  - "echo 'gem: --no-document' > ~/.gemrc"
+  # Node.js
+  - "curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash"
+  - "export NVM_DIR=\"$HOME/.nvm\""
+  - ". \"$NVM_DIR/nvm.sh\""
+  - "nvm install 10.15.0"
+  - "nvm use 10.15.0"
+  - "npm install -g yarn"
+install:
+  - travis_retry bin/setup
+  - travis_retry bin/rails db:setup
+script: bin/test
