@@ -23,7 +23,7 @@ class User::OAuthAuthentication < ApplicationRecord
   def displayed_provider_name
     case provider
     when 'google_oauth2'
-      'Google'
+      BentOS::Config.user_center.oauth.google.display_name || 'Google'
     end
   end
 

@@ -68,20 +68,23 @@
 
   <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
 
-  <%= f.email_field :email, class: 'form-control', placeholder: true, autofocus: true, autocomplete: 'email' %>
-  <%= f.password_field :password, class: 'form-control', placeholder: true, autocomplete: 'current-password' %>
-  <% if devise_mapping.rememberable? %>
-    <div class="checkbox mb-3">
-      <%= f.check_box :remember_me %>
-      <%= f.label :remember_me %>
-    </div>
+  <% if BentOS::Config.user_center.email_password_auth.enable %>
+
+    <%= f.email_field :email, class: 'form-control', placeholder: true, autofocus: true, autocomplete: 'email' %>
+    <%= f.password_field :password, class: 'form-control', placeholder: true, autocomplete: 'current-password' %>
+    <% if devise_mapping.rememberable? %>
+      <div class="checkbox mb-3">
+        <%= f.check_box :remember_me %>
+        <%= f.label :remember_me %>
+      </div>
+    <% end %>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
   <% end %>
-  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 
   <% if @enabled_oauth_configs.present? %>
     <hr />
     <% @enabled_oauth_configs.each do |oauth_config| %>
-      <%= link_to "Sign in with #{oauth_config['display_name']}", omniauth_authorize_path(resource_name, oauth_config['provider']), class: 'btn btn-lg btn-secondary btn-block' %>
+      <%= link_to "Sign in with #{oauth_config['display_name']}", omniauth_authorize_path(resource_name, oauth_config['provider']), class: "btn btn-lg #{!BentOS::Config.user_center.email_password_auth.enable && @enabled_oauth_configs.length == 1 ? 'btn-primary' : 'btn-secondary'} btn-block" %>
     <% end %>
   <% end %>
 
