@@ -21,7 +21,7 @@ default: &default
   user_center:
     # The e-mail sender address which will be used for user authentication
     # or profile related emails, such as Devise::Mailer.
-    mailer_sender: <%= ENV['USER_CENTER_MAILER_SENDER'].presence || "#{app_name} <user_center@#{URI.parse(host_url).host}>" %>
+    mailer_sender: '<%= ENV['USER_CENTER_MAILER_SENDER'].presence || "#{app_name} <user_center@#{URI.parse(host_url).host}>" %>'
 
     # Config sign in via email/password.
     email_password_auth:

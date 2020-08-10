@@ -1,0 +1,40 @@
+{
+  "name": "BentOS",
+  "description": "The Bento Operation System.",
+  "scripts": {
+    "postdeploy": "bin/rake develop:bootstrap"
+  },
+  "buildpacks": [
+    { "url": "heroku/nodejs" },
+    { "url": "heroku/ruby" }
+  ],
+  "addons": [
+    "heroku-postgresql:hobby-dev"
+  ],
+  "env": {
+    "HEROKU_APP_NAME": {
+      "description": "Paste your \"App name\" here. This is used for the app to know which URL it is living at.",
+      "required": true
+    },
+    "HOST_URL": {
+      "description": "The URL of the host, not required if `HEROKU_APP_NAME` is set.",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "A secret key.",
+      "generator": "secret"
+    },
+    "USER_CENTER_MAILER_SENDER": {
+      "required": false
+    },
+    "OAUTH_GOOGLE_CLIENT_ID": {
+      "required": false
+    },
+    "OAUTH_GOOGLE_CLIENT_SECRET": {
+      "required": false
+    },
+    "OAUTH_GOOGLE_DISPLAY_NAME": {
+      "required": false
+    }
+  }
+}
