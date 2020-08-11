@@ -1,4 +1,4 @@
-# BentOS [![Build Status](https://travis-ci.org/zetavg/BentOS.svg?branch=master)](https://travis-ci.org/zetavg/BentOS) [![Coverage Status](https://coveralls.io/repos/github/zetavg/BentOS/badge.svg?branch=master)](https://coveralls.io/github/zetavg/BentOS?branch=master)
+# BentOS [![Build Status](https://travis-ci.org/zetavg/BentOS.svg?branch=master)](https://travis-ci.org/zetavg/BentOS) [![Coverage Status](https://coveralls.io/repos/github/zetavg/BentOS/badge.svg?branch=master)](https://coveralls.io/github/zetavg/BentOS?branch=master) [![Maintainability](https://api.codeclimate.com/v1/badges/b40e8bab1e428acb909e/maintainability)](https://codeclimate.com/github/zetavg/BentOS/maintainability)
 
 The **Bento** **O**peration **S**ystem.
 
