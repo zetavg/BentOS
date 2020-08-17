@@ -32,5 +32,5 @@ FileUtils.chdir APP_ROOT do
   puts "\n== Restarting application server =="
   system! 'bin/rails restart'
 
-  puts "\nIf you wish to setup the database, please make sure the configurations in config/database.yml is correct (or use the DATABASE_URL environment variable), and run `bin/rails db:setup`."
+  puts "\nIf you wish to setup the database, please make sure the configurations in config/database.yml is correct (or use the DATABASE_URL environment variable), and run `bin/rails db:setup`." # rubocop:disable Layout/LineLength
 end

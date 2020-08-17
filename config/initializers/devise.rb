@@ -14,7 +14,7 @@ Devise.setup do |config|
   # confirmation, reset password and unlock tokens in the database.
   # Devise will use the `secret_key_base` as its `secret_key`
   # by default. You can change it below and use your own secret key.
-  # config.secret_key = '4b662e4788397dabb116a7b50bc8bc5cf9bf4ce52ca5beea7b4f18ab59e76d4fe9e3e6ec33c98f68ecbf8bc8439d6f1dde16963c405808eda9ea4012a81b4502'
+  # config.secret_key = '...'
 
   # ==> Controller configuration
   # Configure the parent class to the devise controllers.
@@ -126,7 +126,7 @@ Devise.setup do |config|
   config.stretches = Rails.env.test? ? 1 : 12
 
   # Set up a pepper to generate the hashed password.
-  # config.pepper = 'd7d0b66f8ef9597ed1acb34de4ba5656c65ae0856b35e541fb29b55c9c928eab18d29e94077f659f09f4db3e09c669f8a55b2ad93d8ccfc7ee27317f03b280a5'
+  # config.pepper = '...'
 
   # Send a notification to the original email when the user's email is changed.
   # config.send_email_changed_notification = false
@@ -273,7 +273,9 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
   if BentOS::Config.user_center.oauth.google.enable
-    config.omniauth :google_oauth2, BentOS::Config.user_center.oauth.google.client_id, BentOS::Config.user_center.oauth.google.client_secret
+    config.omniauth :google_oauth2,
+                    BentOS::Config.user_center.oauth.google.client_id,
+                    BentOS::Config.user_center.oauth.google.client_secret
     BentOS::Config.user_center.oauth[:google][:provider] = :google_oauth2
   end
 

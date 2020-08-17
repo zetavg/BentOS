@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
 class User::OAuthAuthentication < ApplicationRecord
-  belongs_to :user, inverse_of: :oauth_authentications, optional: true # In some cases, such as the new OAuth authentication has a suspicious existing account, we will create the OAuthAuthentication record before linking it to an user
+  belongs_to :user,
+             inverse_of: :oauth_authentications,
+             # In some cases, such as the new OAuth authentication has a suspicious existing account,
+             # we will create the OAuthAuthentication record before linking it to an user.
+             optional: true
 
   validates :uid, uniqueness: { scope: :provider }
 

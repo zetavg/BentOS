@@ -4,7 +4,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :rememberable, :recoverable, :lockable,
          :registerable, :omniauthable, :validatable, :confirmable
 
-  has_many :oauth_authentications
+  has_many :oauth_authentications, dependent: :destroy
 
   def self.from_oauth_authentication(oauth_authentication)
     user = oauth_authentication.user
