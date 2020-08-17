@@ -11,7 +11,7 @@ env:
   jobs:
     - TEST_TYPE=rspec
     - TEST_TYPE=rubocop
-    - TEST_TYPE=eslint
+    # - TEST_TYPE=eslint
 before_install:
   - "sudo apt-get update"
   # PostgreSQL

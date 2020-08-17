@@ -23,7 +23,7 @@ gem 'jbuilder', '~> 2.7'
 # gem 'bcrypt', '~> 3.1.7'
 
 # Console utilities
-gem 'hirb-unicode'
+gem 'hirb-unicode', github: 'zetavg/hirb-unicode'
 gem 'amazing_print'
 
 # Application configuration management
@@ -57,6 +57,10 @@ group :development, :test do
 
   gem 'simplecov', require: false
   gem 'coveralls', '~> 0.8', require: false
+
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rails', require: false
 end
 
 group :development do

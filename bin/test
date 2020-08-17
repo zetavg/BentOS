@@ -20,10 +20,10 @@ chdir APP_ROOT do
     errors_count += 1 unless system 'bin/rspec spec'
   end
 
-  # if !test_type || test_type == 'rubocop'
-  #   puts "\n== Running Rubocup =="
-  #   errors_count += 1 unless system 'bin/rubocop'
-  # end
+  if !test_type || test_type == 'rubocop'
+    puts "\n== Running Rubocup =="
+    errors_count += 1 unless system 'bin/rubocop'
+  end
 
   # if !test_type || test_type == 'eslint'
   #   puts "\n== Running ESLint =="
