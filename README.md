@@ -13,6 +13,12 @@ The **Bento** **O**peration **S**ystem.
 2. Edit `.env`.
 3. Edit `config/database.yml` and run `bin/rails db:setup` if needed.
 
+## Development
+
+### Tasks
+
+- `bin/rake develop:bootstrap`: Fill the database with sample data.
+
 ## Deploy
 
 ### Heroku
