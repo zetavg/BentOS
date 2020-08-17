@@ -66,10 +66,7 @@
 <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: 'form-signin' }) do |f| %>
   <div class="app-name"><%= BentOS::Config.app_name %></div>
 
-  <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-
   <% if BentOS::Config.user_center.email_password_auth.enable %>
-
     <%= f.email_field :email, class: 'form-control', placeholder: true, autofocus: true, autocomplete: 'email' %>
     <%= f.password_field :password, class: 'form-control', placeholder: true, autocomplete: 'current-password' %>
     <% if devise_mapping.rememberable? %>
