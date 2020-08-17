@@ -17,12 +17,12 @@ FileUtils.chdir APP_ROOT do
 
   if !test_type || test_type == 'rspec'
     puts "\n== Running RSpec =="
-    errors_count += 1 unless system 'bin/rspec spec'
+    errors_count += 1 unless system 'bin/rspec spec --color --tty'
   end
 
   if !test_type || test_type == 'rubocop'
     puts "\n== Running Rubocup =="
-    errors_count += 1 unless system 'bin/rubocop'
+    errors_count += 1 unless system 'bin/rubocop --color'
   end
 
   # if !test_type || test_type == 'eslint'
