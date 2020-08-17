@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User::OAuthAuthentication < ApplicationRecord
   belongs_to :user, inverse_of: :oauth_authentications, optional: true # In some cases, such as the new OAuth authentication has a suspicious existing account, we will create the OAuthAuthentication record before linking it to an user
 
@@ -11,7 +13,7 @@ class User::OAuthAuthentication < ApplicationRecord
       oauth_authentication.access_token = auth.dig(:credentials, :token)
       oauth_authentication.refresh_token = auth.dig(:credentials, :refresh_token)
       credentials_expires_at = auth.dig(:credentials, :expires_at)
-      oauth_authentication.access_token_expires_at = Time.at(credentials_expires_at) if credentials_expires_at
+      oauth_authentication.access_token_expires_at = Time.zone.at(credentials_expires_at) if credentials_expires_at
       oauth_authentication.data = (auth[:info] || {}).merge(auth.dig(:extra, :raw_info) || {})
     else
       raise StandardError, "Unknown auth[:provider]: '#{auth[:provider]}'"

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateUserOAuthAuthentications < ActiveRecord::Migration[6.0]
   def change
     create_table :user_oauth_authentications, id: :uuid do |t|

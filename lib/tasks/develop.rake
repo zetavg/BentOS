@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 namespace :develop do
   task bootstrap: [:'db:migrate'] do
     unless User.where(email: 'admin@example.com').any?
-      puts "Creating admin user"
+      puts 'Creating admin user'
       user = User.new(
         email: 'admin@example.com',
         password: 'password'

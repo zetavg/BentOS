@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FlashMessagesHelper
   def class_for_flash_message(flash_type)
     {
