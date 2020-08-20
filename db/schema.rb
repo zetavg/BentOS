@@ -10,11 +10,50 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_25_000002) do
+ActiveRecord::Schema.define(version: 2020_07_25_000003) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "double_entry_account_balances", force: :cascade do |t|
+    t.string "account", null: false
+    t.string "scope"
+    t.bigint "balance", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["account"], name: "index_account_balances_on_account"
+    t.index ["scope", "account"], name: "index_account_balances_on_scope_and_account", unique: true
+  end
+
+  create_table "double_entry_line_checks", force: :cascade do |t|
+    t.bigint "last_line_id", null: false
+    t.boolean "errors_found", null: false
+    t.text "log"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["created_at", "last_line_id"], name: "line_checks_created_at_last_line_id_idx"
+  end
+
+  create_table "double_entry_lines", force: :cascade do |t|
+    t.string "account", null: false
+    t.string "scope"
+    t.string "code", null: false
+    t.bigint "amount", null: false
+    t.bigint "balance", null: false
+    t.bigint "partner_id"
+    t.string "partner_account", null: false
+    t.string "partner_scope"
+    t.string "detail_type"
+    t.bigint "detail_id"
+    t.jsonb "metadata"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["account", "code", "created_at"], name: "lines_account_code_created_at_idx"
+    t.index ["account", "created_at"], name: "lines_account_created_at_idx"
+    t.index ["scope", "account", "created_at"], name: "lines_scope_account_created_at_idx"
+    t.index ["scope", "account", "id"], name: "lines_scope_account_id_idx"
+  end
 
   create_table "user_oauth_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id"

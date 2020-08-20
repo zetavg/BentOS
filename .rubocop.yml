@@ -4,9 +4,9 @@ require:
 AllCops:
   TargetRubyVersion: 2.7
   Exclude:
-    - db/schema.rb
     - vendor/ruby/**/*
     - node_modules/**/*
+    - db/**/*
 Bundler/OrderedGems:
   Enabled: false
 Layout/EmptyLinesAroundAttributeAccessor:
