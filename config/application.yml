@@ -37,6 +37,9 @@ default: &default
         client_secret: <%= ENV['OAUTH_GOOGLE_CLIENT_SECRET'] %>
         display_name: <%= ENV['OAUTH_GOOGLE_DISPLAY_NAME'].presence || 'Google' %>
 
+  accounting:
+    system_currency: <%= ENV['SYSTEM_CURRENCY'].presence || 'TWD' %>
+
 development:
   <<: *default
 
