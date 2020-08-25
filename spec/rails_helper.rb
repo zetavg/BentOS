@@ -73,3 +73,74 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
+
+# Provides a way to simulate database failure, which we can use to test if our transactions are safe.
+module DatabaseFailureSimulator
+  @@countdown = 0 # rubocop:disable Style/ClassVars
+  @@match_sql = '' # rubocop:disable Style/ClassVars
+
+  mattr_accessor :countdown, :match_sql
+
+  def self.failure_countdown(countdown = 1)
+    self.countdown = countdown
+  end
+
+  def self.failure_on_next(match_sql)
+    self.match_sql = match_sql
+  end
+
+  def self.reset
+    self.countdown = 0
+    self.match_sql = ''
+  end
+
+  def self.check_sql(sql)
+    if countdown > 0
+      self.countdown = countdown - 1
+
+      if countdown <= 0
+        self.countdown = 0
+        raise SimulatedDatabaseError, "Boom! This is a simulated database failure. SQL: `#{sql}` hits countdown 0."
+      end
+    end
+
+    if match_sql.present? && sql.match(match_sql) # rubocop:disable Style/GuardClause
+      self.match_sql = ''
+      raise SimulatedDatabaseError, "Boom! This is a simulated database failure. SQL: `#{sql}` matches `#{match_sql}`."
+    end
+  end
+
+  class SimulatedDatabaseError < StandardError; end
+
+  def execute(sql, *)
+    DatabaseFailureSimulator.check_sql(sql)
+
+    super
+  end
+
+  def exec_query(sql, *, **)
+    DatabaseFailureSimulator.check_sql(sql)
+
+    super
+  end
+
+  def exec_insert(sql, *, **)
+    DatabaseFailureSimulator.check_sql(sql)
+
+    super
+  end
+
+  def exec_update(sql, *, **)
+    DatabaseFailureSimulator.check_sql(sql)
+
+    super
+  end
+
+  def exec_delete(sql, *, **)
+    DatabaseFailureSimulator.check_sql(sql)
+
+    super
+  end
+end
+
+::ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.prepend DatabaseFailureSimulator
