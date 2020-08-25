@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Money.default_currency = Money::Currency.new(BentOS::Config.accounting.system_currency)
+Money.rounding_mode = BigDecimal::ROUND_HALF_UP
 
 require 'double_entry'
 
