@@ -144,3 +144,7 @@ module DatabaseFailureSimulator
 end
 
 ::ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.prepend DatabaseFailureSimulator
+
+# Tell DoubleEntry not to complain about a containing transaction (DoubleEntry::Locking::LockMustBeOutermostTransaction)
+# when we call lock_accounts.
+DoubleEntry::Locking.configuration.running_inside_transactional_fixtures = true

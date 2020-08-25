@@ -15,6 +15,9 @@ Layout/HashAlignment:
   Enabled: false
 Layout/SpaceAroundMethodCallOperator:
   Enabled: true
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - 'spec/**/*.rb' # To allow something like `expect { ... }.to ... .and ...` in specs
 Lint/BinaryOperatorWithIdenticalOperands:
   Enabled: true
 Lint/DeprecatedOpenSSLConstant:
