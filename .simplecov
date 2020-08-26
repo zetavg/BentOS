@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'coveralls'
-
 # SimpleCov.start 'rails'
 # We only calculate test coverage on model layer for now.
 # See: https://github.com/simplecov-ruby/simplecov/blob/main/lib/simplecov/profiles/rails.rb
@@ -22,10 +20,3 @@ SimpleCov.start do
 
   track_files '{app,lib}/**/*.rb'
 end
-
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [
-    SimpleCov::Formatter::HTMLFormatter,
-    Coveralls::SimpleCov::Formatter
-  ]
-)
