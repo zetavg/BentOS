@@ -14,4 +14,16 @@
  *= require_self
  */
 
-@import 'bootstrap/scss/bootstrap'
+@import 'bootstrap/scss/bootstrap';
+
+.dropdown-item.active,
+.dropdown-item:active {
+  .text-primary,
+  .text-secondary,
+  .text-success,
+  .text-danger,
+  .text-warning,
+  .text-info {
+    color: #fff !important;
+  }
+}

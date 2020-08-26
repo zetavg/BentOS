@@ -1,0 +1,41 @@
+<div class="table-responsive">
+  <table class="table transactions-table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Transaction type</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @transactions.each do |transaction| %>
+        <tr>
+          <td class="transaction-date" title="<%= transaction.created_at %>">
+            <%= transaction.created_at.to_date.to_formatted_s(:db) %>
+          </td>
+          <td class="transaction-type">
+            <% case transaction.code %>
+            <% when :deposit %>
+              <span class="badge bg-success">Deposit</span>
+            <% when :withdraw %>
+              <span class="badge bg-secondary">Withdraw</span>
+            <% when :user_transfer %>
+              <span class="badge bg-info">Transfer</span>
+            <% else %>
+              <%= transaction.code %>
+            <% end %>
+          </td>
+          <td class="transaction-amount">
+            <%= transaction.amount.format %>
+          </td>
+          <td class="transaction-balance">
+            <%= transaction.balance.format %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= paginate @transactions %>

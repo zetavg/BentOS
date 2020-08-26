@@ -20,6 +20,7 @@ DoubleEntry.configure do |config|
     # Representing the user's own money.
     # The balance should always be not more than zero, since users will only spend money in this system.
     accounts.define(scope_identifier: user_scope, identifier: :user_cash, negative_only: true)
+
     # The money in this account can be used to pay user's orders.
     # The balance may be a negative value if the user choise to pay after the order has been compeleted.
     accounts.define(scope_identifier: user_scope, identifier: :user_account)
@@ -28,6 +29,7 @@ DoubleEntry.configure do |config|
   config.define_transfers do |transfers|
     transfers.define(from: :user_cash, to: :user_account, code: :deposit)
     transfers.define(from: :user_account, to: :user_cash, code: :withdraw)
+
     transfers.define(from: :user_account, to: :user_account, code: :user_transfer)
   end
 end
