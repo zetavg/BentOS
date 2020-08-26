@@ -2,6 +2,7 @@
 
 Money.default_currency = Money::Currency.new(BentOS::Config.accounting.system_currency)
 Money.rounding_mode = BigDecimal::ROUND_HALF_UP
+Money.locale_backend = :i18n
 
 require 'double_entry'
 
@@ -27,5 +28,6 @@ DoubleEntry.configure do |config|
   config.define_transfers do |transfers|
     transfers.define(from: :user_cash, to: :user_account, code: :deposit)
     transfers.define(from: :user_account, to: :user_cash, code: :withdraw)
+    transfers.define(from: :user_account, to: :user_account, code: :user_transfer)
   end
 end

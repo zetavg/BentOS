@@ -99,14 +99,16 @@ module DatabaseFailureSimulator
       self.countdown = countdown - 1
 
       if countdown <= 0
+        error_message = "Boom! This is a simulated database failure. SQL: `#{sql}` hits countdown 0."
         self.countdown = 0
-        raise SimulatedDatabaseError, "Boom! This is a simulated database failure. SQL: `#{sql}` hits countdown 0."
+        raise SimulatedDatabaseError, error_message
       end
     end
 
     if match_sql.present? && sql.match(match_sql) # rubocop:disable Style/GuardClause
+      error_message = "Boom! This is a simulated database failure. SQL: `#{sql}` matches `#{match_sql}`."
       self.match_sql = ''
-      raise SimulatedDatabaseError, "Boom! This is a simulated database failure. SQL: `#{sql}` matches `#{match_sql}`."
+      raise SimulatedDatabaseError, error_message
     end
   end
 
