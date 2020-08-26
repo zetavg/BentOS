@@ -51,7 +51,8 @@ gem 'omniauth-google-oauth2'
 gem 'bootsnap', '>= 1.4.2', require: false
 
 # UI Related Utils
-gem 'simple_form'
+gem 'simple_form' # Simplify the construction of forms
+gem 'kaminari' # Paginator
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
