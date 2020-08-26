@@ -1,0 +1,10 @@
+en:
+  activerecord:
+    errors:
+      models:
+        accounting/user_withdrawal:
+          attributes:
+            user:
+              account_no_money: "has no money in account (account balance is %{account_balance})"
+            amount:
+              bigger_than_account_balance: "must be smaller than the account balance (%{account_balance})"
