@@ -11,7 +11,9 @@
     <tbody>
       <% @transactions.each do |transaction| %>
         <tr>
-          <td title="<%= transaction.created_at %>"><%= transaction.created_at.to_date.to_formatted_s(:db) %></td>
+          <td class="transaction-date" title="<%= transaction.created_at %>">
+            <%= transaction.created_at.to_date.to_formatted_s(:db) %>
+          </td>
           <td class="transaction-type">
             <% case transaction.code %>
             <% when :deposit %>
@@ -24,8 +26,12 @@
               <%= transaction.code %>
             <% end %>
           </td>
-          <td><%= transaction.amount.format %></td>
-          <td><%= transaction.balance.format %></td>
+          <td class="transaction-amount">
+            <%= transaction.amount.format %>
+          </td>
+          <td class="transaction-balance">
+            <%= transaction.balance.format %>
+          </td>
         </tr>
       <% end %>
     </tbody>
