@@ -34,18 +34,23 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbar-user-dropdown" role="button" data-toggle="dropdown" aria-expanded="false">
               <% if current_user.picture_url.present? %>
-                <img src="<%= current_user.picture_url %>" class="rounded" />&nbsp;
+                <img src="<%= current_user.picture_url %>" class="rounded" />&thinsp;
               <% else %>
                 Hi,
               <% end %>
-              <%= current_user.displayed_name %>
+              <%= current_user.displayed_name %>&thinsp;
+              <span class="badge bg-<%= current_user.account.balance.positive? ? 'success' : 'danger' %>" style="vertical-align: text-bottom;">
+                <%= current_user.account.balance.format.split('.')[0] %>
+              </span>
             </a>
             <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="navbar-user-dropdown">
-              <!-- TODO: Implement
+              <!-- TODO: Implement More
               <li><a class="dropdown-item" href="#">Action</a></li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li><hr class="dropdown-divider"></li>
               -->
+              <li>
+                <%= link_to "Your account #{"<span class=\"text-#{current_user.account.balance.positive? ? 'success' : 'danger'}\">(#{current_user.account.balance.format})</span>"}".html_safe, me_account_path, class: "dropdown-item#{controller.class.name.starts_with?('Me::Account') ? ' active' : nil}" %>
+              </li>
+              <li><hr class="dropdown-divider"></li>
               <li>
                 <%= link_to 'Sign out', destroy_user_session_path, method: :delete, class: 'dropdown-item' %>
               </li>

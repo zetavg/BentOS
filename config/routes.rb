@@ -24,4 +24,14 @@ Rails.application.routes.draw do
                get :cancel
              end
   end
+
+  authenticate :user do
+    namespace :me do
+      resource :account, only: [:show] do
+        scope module: :account do
+          resources :transactions, only: [:index]
+        end
+      end
+    end
+  end
 end
