@@ -32,6 +32,9 @@ gem 'amazing_print'
 gem 'settingslogic'
 gem 'dotenv-rails'
 
+# Accounting system
+gem 'double_entry', github: 'envato/double_entry'
+
 # User authentication
 gem 'devise'
 
