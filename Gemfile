@@ -35,6 +35,9 @@ gem 'dotenv-rails'
 # Accounting system
 gem 'double_entry', github: 'envato/double_entry'
 
+# Model utils
+gem 'active_type'
+
 # User authentication
 gem 'devise'
 

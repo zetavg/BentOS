@@ -34,6 +34,14 @@ class User < ApplicationRecord
     name || email
   end
 
+  def account
+    DoubleEntry.account(:user_account, scope: self)
+  end
+
+  def account_transactions
+    DoubleEntry::Line.where(account: :user_account, scope: id)
+  end
+
   protected
 
   def password_required?
