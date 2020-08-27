@@ -37,6 +37,7 @@ gem 'double_entry', github: 'envato/double_entry'
 
 # Model utils
 gem 'active_type'
+gem 'aasm' # State machine
 
 # User authentication
 gem 'devise'
