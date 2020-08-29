@@ -25,7 +25,7 @@ ActiveRecord::Schema.define(version: 2020_07_25_000004) do
     t.string "partner_account_scope_identity"
     t.bigint "capture_line_id"
     t.string "detail_type"
-    t.bigint "detail_id"
+    t.uuid "detail_id"
     t.jsonb "metadata"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define(version: 2020_07_25_000004) do
     t.string "partner_account", null: false
     t.string "partner_scope"
     t.string "detail_type"
-    t.bigint "detail_id"
+    t.uuid "detail_id"
     t.jsonb "metadata"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false

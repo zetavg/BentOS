@@ -11,7 +11,7 @@ class CreateAccountingUserAuthorizationHolds < ActiveRecord::Migration[6.0]
 
       t.references :capture_line, foreign_key: { to_table: :double_entry_lines }, null: true
 
-      t.references :detail, polymorphic: true, null: true, index: { name: :index_accounting_user_authorization_holds_on_detail }
+      t.references :detail, polymorphic: true, null: true, type: :uuid, index: { name: :index_accounting_user_authorization_holds_on_detail }
       if ActiveRecord::Base.connection.adapter_name == 'PostgreSQL'
         t.jsonb 'metadata'
       else

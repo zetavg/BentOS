@@ -124,6 +124,189 @@ RSpec.describe Accounting::UserAuthorizationHold, type: :model do
             change { user_authorization_hold.state }.from('holding').to('closed')
           )
         end
+
+        it 'transfers the money to the :partner_account' do
+          original_account_balance = user.account.balance
+          original_partner_account_balance = partner_user.account.balance
+
+          expect { user_authorization_hold.capture! }
+            .to change { user.account.balance }
+            .from(original_account_balance)
+            .to(original_account_balance - user_authorization_hold.amount)
+            .and change { partner_user.account.balance }
+            .from(original_partner_account_balance)
+            .to(original_partner_account_balance + user_authorization_hold.amount)
+        end
+
+        it "stores it's id in capture transfer line metadatas" do
+          expect { user_authorization_hold.capture! }
+            .to change {
+              DoubleEntry::Line.find_by(
+                "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                user_authorization_hold.id,
+                user.id
+              )&.metadata&.fetch('authorization_hold_id', nil)
+            }
+            .from(nil)
+            .to(user_authorization_hold.id)
+            .and change {
+              DoubleEntry::Line.find_by(
+                "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                user_authorization_hold.id,
+                partner_user.id
+              )&.metadata&.fetch('authorization_hold_id', nil)
+            }
+            .from(nil)
+            .to(user_authorization_hold.id)
+        end
+
+        context 'has metadata as JSON object' do
+          let(:user_authorization_hold) do
+            Accounting::UserAuthorizationHold.create(
+              user: user,
+              amount: 100,
+              transfer_code: :user_transfer,
+              partner_account: partner_user.account,
+              metadata: {
+                foo: 'bar'
+              }
+            )
+          end
+
+          it "stores it's id in capture transfer line metadatas" do
+            expect { user_authorization_hold.capture! }
+              .to change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  user.id
+                )&.metadata&.fetch('authorization_hold_id', nil)
+              }
+              .from(nil)
+              .to(user_authorization_hold.id)
+              .and change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  partner_user.id
+                )&.metadata&.fetch('authorization_hold_id', nil)
+              }
+              .from(nil)
+              .to(user_authorization_hold.id)
+          end
+
+          it "stores it's metadata in capture transfer line metadatas" do
+            expect { user_authorization_hold.capture! }
+              .to change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  user.id
+                )&.metadata&.fetch('foo', nil)
+              }
+              .from(nil)
+              .to('bar')
+              .and change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  partner_user.id
+                )&.metadata&.fetch('foo', nil)
+              }
+              .from(nil)
+              .to('bar')
+          end
+        end
+
+        context 'has metadata as scalar value' do
+          let(:user_authorization_hold) do
+            Accounting::UserAuthorizationHold.create(
+              user: user,
+              amount: 100,
+              transfer_code: :user_transfer,
+              partner_account: partner_user.account,
+              metadata: 'foo'
+            )
+          end
+
+          it "stores it's id in capture transfer line metadatas" do
+            expect { user_authorization_hold.capture! }
+              .to change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  user.id
+                )&.metadata&.fetch('authorization_hold_id', nil)
+              }
+              .from(nil)
+              .to(user_authorization_hold.id)
+              .and change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  partner_user.id
+                )&.metadata&.fetch('authorization_hold_id', nil)
+              }
+              .from(nil)
+              .to(user_authorization_hold.id)
+          end
+
+          it "stores it's metadata in capture transfer line metadatas' value field" do
+            expect { user_authorization_hold.capture! }
+              .to change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  user.id
+                )&.metadata&.fetch('value', nil)
+              }
+              .from(nil)
+              .to('foo')
+              .and change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  partner_user.id
+                )&.metadata&.fetch('value', nil)
+              }
+              .from(nil)
+              .to('foo')
+          end
+        end
+
+        context 'has detail' do
+          let(:user_authorization_hold) do
+            Accounting::UserAuthorizationHold.create(
+              user: user,
+              amount: 100,
+              transfer_code: :user_transfer,
+              partner_account: partner_user.account,
+              detail: partner_user
+            )
+          end
+
+          it "stores it's detail in capture transfer line detail" do
+            expect { user_authorization_hold.capture! }
+              .to change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  user.id
+                )&.detail&.id
+              }
+              .from(nil)
+              .to(partner_user.id)
+              .and change {
+                DoubleEntry::Line.find_by(
+                  "metadata ->> 'authorization_hold_id' = ? AND scope = ?",
+                  user_authorization_hold.id,
+                  partner_user.id
+                )&.detail&.id
+              }
+              .from(nil)
+              .to(partner_user.id)
+          end
+        end
       end
 
       describe '#reverse!' do

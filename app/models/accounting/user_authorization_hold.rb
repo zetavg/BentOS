@@ -25,12 +25,33 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   belongs_to :user
   belongs_to :detail, polymorphic: true, optional: true
 
-  aasm column: :state do
+  aasm column: :state, use_transactions: false, requires_lock: true do
     state :holding, initial: true
     state :closed
     state :reversed
 
     event :capture do
+      before do
+        DoubleEntry.transfer(
+          amount,
+          code: transfer_code&.to_sym,
+          from: user.account,
+          to: partner_account,
+          detail: detail,
+          metadata: { authorization_hold_id: id }
+            .merge(
+              case metadata
+              when nil
+                {}
+              when Hash
+                metadata
+              else
+                { value: metadata }
+              end
+            )
+        )
+      end
+
       transitions from: :holding, to: :closed
     end
 
@@ -42,6 +63,28 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   # Do not allow calling lifecycle events without saving
   private :capture
   private :reverse
+
+  alias _capture! capture!
+
+  def capture!
+    if ActiveRecord::Base.connection.open_transactions.zero?
+      transaction do
+        _capture!
+      end
+
+      return
+    end
+
+    _capture!
+  end
+
+  def transaction(*accounts_to_lock, &_block)
+    DoubleEntry.lock_accounts(user.account, partner_account, *accounts_to_lock) do
+      yield if block_given?
+    end
+  ensure
+    reload
+  end
 
   validates :amount, numericality: { greater_than: 0 }, allow_blank: false
   validate :transfer_code_valid
