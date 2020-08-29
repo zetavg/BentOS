@@ -25,7 +25,7 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   belongs_to :user
   belongs_to :detail, polymorphic: true, optional: true
 
-  aasm column: :state, use_transactions: false, requires_lock: true do
+  aasm column: :state, use_transactions: false do
     state :holding, initial: true
     state :closed
     state :reversed
@@ -60,24 +60,6 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
     end
   end
 
-  # Do not allow calling lifecycle events without saving
-  private :capture
-  private :reverse
-
-  alias _capture! capture!
-
-  def capture!
-    if ActiveRecord::Base.connection.open_transactions.zero?
-      transaction do
-        _capture!
-      end
-
-      return
-    end
-
-    _capture!
-  end
-
   def transaction(*accounts_to_lock, &_block)
     DoubleEntry.lock_accounts(user.account, partner_account, *accounts_to_lock) do
       yield if block_given?
@@ -89,6 +71,41 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   validates :amount, numericality: { greater_than: 0 }, allow_blank: false
   validate :transfer_code_valid
   validate :partner_account_valid
+
+  # Do not allow calling lifecycle events without saving
+  private :capture
+  private :reverse
+
+  # We need to override event methods and wrap them in appropriate database transactions
+  # since use_transactions is set to false on AASM state because double_entry transaction
+  # must be the outermost transaction while dealing with double_entry stuff.
+
+  alias _capture! capture!
+  alias _reverse! reverse!
+
+  def capture!
+    unless wrapped_in_transaction?
+      transaction do
+        lock! && _capture!
+      end
+
+      return
+    end
+
+    lock! && _capture!
+  end
+
+  def reverse!
+    unless wrapped_in_transaction?
+      transaction do
+        lock! && _reverse!
+      end
+
+      return
+    end
+
+    lock! && _reverse!
+  end
 
   class << self
     def available_transfers
@@ -114,5 +131,10 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
     return if transfer.to == partner_account&.identifier
 
     errors.add(:partner_account, :invalid, available_partner_account_identifier: transfer.to)
+  end
+
+  def wrapped_in_transaction?
+    running_inside_transactional_fixtures = DoubleEntry::Locking.configuration.running_inside_transactional_fixtures
+    ActiveRecord::Base.connection.open_transactions > (running_inside_transactional_fixtures ? 1 : 0)
   end
 end

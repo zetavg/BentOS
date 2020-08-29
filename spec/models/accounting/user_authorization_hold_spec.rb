@@ -115,6 +115,7 @@ RSpec.describe Accounting::UserAuthorizationHold, type: :model do
 
   describe 'lifecycle' do
     describe 'states' do
+      # TODO: Test behavior on each state
     end
 
     describe 'events' do
@@ -307,6 +308,72 @@ RSpec.describe Accounting::UserAuthorizationHold, type: :model do
               .to(partner_user.id)
           end
         end
+
+        describe 'wrapped in #transaction' do
+          it 'should not change anything if one thing in the transaction fails' do
+            expect do
+              user_authorization_hold.transaction do
+                user_authorization_hold.capture!
+                raise 'Error'
+              end
+            end
+              .to raise_error(StandardError)
+              .and does_not_change { user_authorization_hold.state }
+              .and does_not_change { user.account.balance }
+              .and does_not_change { partner_user.account.balance }
+          end
+        end
+
+        it 'prevents race condition' do
+          another_user_authorization_hold_instance = Accounting::UserAuthorizationHold.find(user_authorization_hold.id)
+
+          original_account_balance = user.account.balance
+          original_partner_account_balance = partner_user.account.balance
+
+          # The first capture changes the account balance
+          expect { user_authorization_hold.capture! }
+            .to change { user.account.balance }
+            .from(original_account_balance)
+            .to(original_account_balance - user_authorization_hold.amount)
+            .and change { partner_user.account.balance }
+            .from(original_partner_account_balance)
+            .to(original_partner_account_balance + user_authorization_hold.amount)
+
+          # Capture the authorization hold on another instance which is the same authorization hold
+          # should not change the account balance
+          expect { another_user_authorization_hold_instance.capture! }
+            .to raise_error(AASM::InvalidTransition)
+            .and does_not_change { user.account.balance }
+            .and does_not_change { partner_user.account.balance }
+            .and change { another_user_authorization_hold_instance.state }
+            .from('holding')
+            .to('closed')
+          expect(user.account.balance).to eq(original_account_balance - user_authorization_hold.amount)
+          expect(partner_user.account.balance).to eq(original_partner_account_balance + user_authorization_hold.amount)
+        end
+
+        context 'database failure during transaction' do
+          before(:each) do
+            last_sql_in_transaction_match = 'UPDATE "accounting_user_authorization_holds"'
+            DatabaseFailureSimulator.failure_on_next(last_sql_in_transaction_match)
+          end
+          after(:each) do
+            DatabaseFailureSimulator.reset
+          end
+
+          it 'raises error and does not transfers the money' do
+            expect { user_authorization_hold.capture! }
+              .to raise_error(DatabaseFailureSimulator::SimulatedDatabaseError)
+              .and does_not_change { user.account.balance }
+              .and does_not_change { partner_user.account.balance }
+          end
+
+          it 'raises error and does not change the state' do
+            expect { user_authorization_hold.capture! }
+              .to raise_error(DatabaseFailureSimulator::SimulatedDatabaseError)
+              .and does_not_change { user_authorization_hold.state }
+          end
+        end
       end
 
       describe '#reverse!' do
@@ -314,6 +381,30 @@ RSpec.describe Accounting::UserAuthorizationHold, type: :model do
           expect { user_authorization_hold.reverse! }.to(
             change { user_authorization_hold.state }.from('holding').to('reversed')
           )
+        end
+
+        describe 'wrapped in #transaction' do
+          it 'should not change anything if one thing in the transaction fails' do
+            expect do
+              user_authorization_hold.transaction do
+                user_authorization_hold.reverse!
+                raise 'Error'
+              end
+            end
+              .to raise_error(StandardError)
+              .and does_not_change { user_authorization_hold.state }
+          end
+        end
+
+        it 'prevents race condition' do
+          another_user_authorization_hold_instance = Accounting::UserAuthorizationHold.find(user_authorization_hold.id)
+
+          another_user_authorization_hold_instance.capture!
+
+          expect { user_authorization_hold.reverse! }
+            .to raise_error(AASM::InvalidTransition)
+            .and does_not_change { another_user_authorization_hold_instance.reload.state }
+            .and change { user_authorization_hold.state }.from('holding').to('closed')
         end
       end
     end
