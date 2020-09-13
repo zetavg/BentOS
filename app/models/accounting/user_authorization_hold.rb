@@ -2,6 +2,10 @@
 
 class Accounting::UserAuthorizationHold < ApplicationRecord
   include AASM
+  include Immutable
+
+  immutable if: -> { %w[closed reversed].include?(state_was) },
+            error_options: -> { { current_state: state_was } }
 
   monetize :amount_subunit, as: :amount
 
@@ -25,7 +29,7 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   belongs_to :user
   belongs_to :detail, polymorphic: true, optional: true
 
-  aasm column: :state, use_transactions: false do
+  aasm column: :state, use_transactions: false, whiny_persistence: true do
     state :holding, initial: true
     state :closed
     state :reversed

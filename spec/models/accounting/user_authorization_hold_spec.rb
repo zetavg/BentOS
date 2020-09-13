@@ -113,9 +113,128 @@ RSpec.describe Accounting::UserAuthorizationHold, type: :model do
     end
   end
 
-  describe 'lifecycle' do
+  describe 'state machine' do
     describe 'states' do
-      # TODO: Test behavior on each state
+      describe 'holding' do
+        let(:user_authorization_hold) do
+          Accounting::UserAuthorizationHold.create(
+            state: :holding,
+            user: user,
+            amount: 100,
+            transfer_code: :user_transfer,
+            partner_account: partner_user.account
+          )
+        end
+
+        it 'is mutable' do
+          new_amount = Money.from_amount(123)
+          user_authorization_hold.amount = new_amount
+          expect(user_authorization_hold.save).to be(true)
+          expect(user_authorization_hold.reload.amount).to be(new_amount)
+        end
+      end
+
+      describe 'closed' do
+        let(:user_authorization_hold) do
+          Accounting::UserAuthorizationHold.create(
+            state: :closed,
+            user: user,
+            amount: 100,
+            transfer_code: :user_transfer,
+            partner_account: partner_user.account
+          )
+        end
+
+        it 'is immutable' do
+          user_authorization_hold.amount = 123
+          expect(user_authorization_hold.save).to be(false)
+          expect(user_authorization_hold.errors.details[:base]).to have_shape(
+            [
+              {
+                error: :immutable,
+                changed_attribute_names: [:amount_subunit],
+                current_state: 'closed'
+              }
+            ]
+          )
+
+          user_authorization_hold.reload
+          user_authorization_hold.state = :holding
+          expect(user_authorization_hold.save).to be(false)
+          expect(user_authorization_hold.errors.details[:base]).to have_shape(
+            [
+              {
+                error: :immutable,
+                changed_attribute_names: [:state],
+                current_state: 'closed'
+              }
+            ]
+          )
+
+          user_authorization_hold.user = FactoryBot.create(:user, :confirmed)
+          expect(user_authorization_hold.save).to be(false)
+          expect(user_authorization_hold.errors.details[:base]).to have_shape(
+            [
+              {
+                error: :immutable,
+                changed_attribute_names: [:state, :user_id],
+                current_state: 'closed'
+              }
+            ]
+          )
+        end
+      end
+
+      describe 'reversed' do
+        let(:user_authorization_hold) do
+          Accounting::UserAuthorizationHold.create(
+            state: :reversed,
+            user: user,
+            amount: 100,
+            transfer_code: :user_transfer,
+            partner_account: partner_user.account
+          )
+        end
+
+        it 'is immutable' do
+          user_authorization_hold.amount = 123
+          expect(user_authorization_hold.save).to be(false)
+          expect(user_authorization_hold.errors.details[:base]).to have_shape(
+            [
+              {
+                error: :immutable,
+                changed_attribute_names: [:amount_subunit],
+                current_state: 'reversed'
+              }
+            ]
+          )
+
+          user_authorization_hold.reload
+          user_authorization_hold.state = :holding
+          expect(user_authorization_hold.save).to be(false)
+          expect(user_authorization_hold.errors.details[:base]).to have_shape(
+            [
+              {
+                error: :immutable,
+                changed_attribute_names: [:state],
+                current_state: 'reversed'
+              }
+            ]
+          )
+
+          user_authorization_hold.user = FactoryBot.create(:user, :confirmed)
+          expect(user_authorization_hold.save).to be(false)
+          expect(user_authorization_hold.errors.details[:base]).to have_shape(
+            [
+              {
+                error: :immutable,
+                changed_attribute_names: [:state, :user_id],
+                current_state: 'reversed'
+              }
+            ]
+          )
+        end
+      end
     end
 
     describe 'events' do
