@@ -4,7 +4,11 @@ class User < ApplicationRecord
   devise :database_authenticatable, :rememberable, :recoverable, :lockable,
          :registerable, :omniauthable, :validatable, :confirmable
 
+  monetize :credit_limit_subunit, as: :credit_limit, allow_nil: true
+
   has_many :oauth_authentications, dependent: :destroy
+
+  validates :credit_limit, numericality: { greater_than: 0 }
 
   def self.from_oauth_authentication(oauth_authentication)
     user = oauth_authentication.user
@@ -40,6 +44,12 @@ class User < ApplicationRecord
 
   def account_transactions
     DoubleEntry::Line.where(account: :user_account, scope: id)
+  end
+
+  def credit_limit
+    return Money.new(credit_limit_subunit) if credit_limit_subunit.present?
+
+    Money.from_amount(BentOS::Config.accounting.default_credit_limit_amount)
   end
 
   protected

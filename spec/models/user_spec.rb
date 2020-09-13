@@ -3,12 +3,42 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
+  describe 'virtual attributes' do
+    let(:user) { FactoryBot.create(:user, :confirmed) }
+    let(:another_user) { FactoryBot.create(:user, :confirmed) }
+
+    describe '#credit_limit' do
+      it 'defaults to `BentOS::Config.accounting.default_credit_limit_amount`' do
+        expect(user.credit_limit).to eq(
+          Money.from_amount(BentOS::Config.accounting.default_credit_limit_amount)
+        )
+      end
+
+      it 'can be set to a custom value per user' do
+        custom_credit_limit = Money.from_amount(123_456_789.0)
+        user.credit_limit = custom_credit_limit
+        expect(user.credit_limit).to eq(custom_credit_limit)
+
+        # credit_limit should be persisted
+        user.save!
+        user.reload
+        expect(user.credit_limit).to eq(custom_credit_limit)
+
+        # Setting the credit_limit for a user will not affect other users
+        expect(another_user.credit_limit).to eq(
+          Money.from_amount(BentOS::Config.accounting.default_credit_limit_amount)
+        )
+      end
+    end
+  end
+
   describe 'relations' do
     it { is_expected.to have_many(:oauth_authentications) }
   end
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:email) }
+    it { is_expected.to validate_numericality_of(:credit_limit).is_greater_than(0) }
   end
 
   describe '#from_oauth_authentication' do

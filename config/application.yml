@@ -40,6 +40,9 @@ default: &default
   accounting:
     system_currency: <%= ENV['SYSTEM_CURRENCY'].presence || 'TWD' %>
 
+    # The default credit limit amount for users.
+    default_credit_limit_amount: <%= ENV['DEFAULT_CREDIT_LIMIT_AMOUNT'].present? ? ENV['DEFAULT_CREDIT_LIMIT_AMOUNT'].to_d : '200.0'.to_d %>
+
 development:
   <<: *default
 
