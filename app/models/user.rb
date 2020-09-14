@@ -7,6 +7,7 @@ class User < ApplicationRecord
   monetize :credit_limit_subunit, as: :credit_limit, allow_nil: true
 
   has_many :oauth_authentications, dependent: :destroy
+  has_many :authorization_holds, class_name: 'Accounting::UserAuthorizationHold', dependent: :destroy
 
   validates :credit_limit, numericality: { greater_than: 0 }
 
@@ -50,6 +51,20 @@ class User < ApplicationRecord
     return Money.new(credit_limit_subunit) if credit_limit_subunit.present?
 
     Money.from_amount(BentOS::Config.accounting.default_credit_limit_amount)
+  end
+
+  def remaining_credit_limit
+    credit_limit + account_balance - authorization_hold_amount
+  end
+
+  delegate :balance, to: :account, prefix: true
+
+  def available_account_balance
+    account_balance - authorization_hold_amount
+  end
+
+  def authorization_hold_amount
+    authorization_holds.holding.map(&:amount).sum
   end
 
   protected

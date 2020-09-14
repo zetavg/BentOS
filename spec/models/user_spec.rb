@@ -30,10 +30,140 @@ RSpec.describe User, type: :model do
         )
       end
     end
+
+    describe '#account_balance' do
+      let(:user) do
+        FactoryBot.create(
+          :user,
+          :confirmed,
+          :with_account_balance,
+          account_balance: 500,
+          credit_limit: 10_000
+        )
+      end
+      let(:user_2) do
+        FactoryBot.create(
+          :user,
+          :confirmed
+        )
+      end
+
+      it "returns the user's account balance" do
+        expect(user.account_balance).to eq(Money.from_amount(500))
+
+        user.authorization_holds.create!(
+          user: user,
+          amount: 100,
+          transfer_code: :user_transfer,
+          partner_account: user_2.account
+        )
+        expect(user.account_balance).to eq(Money.from_amount(500))
+
+        DoubleEntry.transfer Money.from_amount(200),
+                             code: :user_transfer,
+                             from: user.account,
+                             to: user_2.account
+        expect(user.account_balance).to eq(Money.from_amount(300))
+
+        DoubleEntry.transfer Money.from_amount(500),
+                             code: :user_transfer,
+                             from: user.account,
+                             to: user_2.account
+        expect(user.account_balance).to eq(Money.from_amount(-200))
+      end
+    end
+
+    describe '#available_account_balance' do
+      let(:user) do
+        FactoryBot.create(
+          :user,
+          :confirmed,
+          :with_account_balance,
+          account_balance: 500,
+          credit_limit: 10_000
+        )
+      end
+      let(:user_2) do
+        FactoryBot.create(
+          :user,
+          :confirmed
+        )
+      end
+
+      it "returns the user's (account balance - sum of holding authorization hold amount)" do
+        expect(user.available_account_balance).to eq(Money.from_amount(500))
+
+        user.authorization_holds.create!(
+          user: user,
+          amount: 100,
+          transfer_code: :user_transfer,
+          partner_account: user_2.account
+        )
+        expect(user.available_account_balance).to eq(Money.from_amount(400))
+
+        user.authorization_holds.create!(
+          user: user,
+          amount: 200,
+          transfer_code: :user_transfer,
+          partner_account: user_2.account
+        )
+        expect(user.available_account_balance).to eq(Money.from_amount(200))
+      end
+    end
+
+    describe '#remaining_credit_limit' do
+      let(:user_1) do
+        FactoryBot.create(
+          :user,
+          :confirmed,
+          :with_account_balance,
+          account_balance: -500,
+          credit_limit: 1000
+        )
+      end
+      let(:user_2) do
+        FactoryBot.create(
+          :user,
+          :confirmed,
+          :with_account_balance,
+          account_balance: 1000,
+          credit_limit: 200
+        )
+      end
+
+      it "returns the user's (credit_limit + account balance - sum of holding authorization hold amount)" do
+        expect(user_1.remaining_credit_limit).to eq(Money.from_amount(500))
+
+        user_1.authorization_holds.create!(
+          user: user,
+          amount: 100,
+          transfer_code: :user_transfer,
+          partner_account: user_2.account
+        )
+        expect(user_1.remaining_credit_limit).to eq(Money.from_amount(400))
+
+        expect(user_2.remaining_credit_limit).to eq(Money.from_amount(1200))
+
+        user_2.authorization_holds.create!(
+          user: user,
+          amount: 200,
+          transfer_code: :user_transfer,
+          partner_account: user_1.account
+        )
+        expect(user_2.remaining_credit_limit).to eq(Money.from_amount(1000))
+
+        DoubleEntry.transfer Money.from_amount(2000),
+                             code: :user_transfer,
+                             from: user_2.account,
+                             to: FactoryBot.create(:user, :confirmed).account
+        expect(user_2.remaining_credit_limit).to eq(Money.from_amount(-1000))
+      end
+    end
   end
 
   describe 'relations' do
     it { is_expected.to have_many(:oauth_authentications) }
+    it { is_expected.to have_many(:authorization_holds) }
   end
 
   describe 'validations' do
