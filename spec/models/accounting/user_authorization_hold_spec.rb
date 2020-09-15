@@ -3,7 +3,15 @@
 require 'rails_helper'
 
 RSpec.describe Accounting::UserAuthorizationHold, type: :model do
-  let(:user) { FactoryBot.create(:user, :confirmed, :with_account_balance, account_balance: 1000) }
+  let(:user) do
+    FactoryBot.create(
+      :user,
+      :confirmed,
+      :with_account_balance,
+      account_balance: 1000,
+      credit_limit: 500
+    )
+  end
   let(:partner_user) { FactoryBot.create(:user, :confirmed) }
   let(:user_authorization_hold) do
     Accounting::UserAuthorizationHold.create(
@@ -109,6 +117,54 @@ RSpec.describe Accounting::UserAuthorizationHold, type: :model do
       )
       expect(user_authorization_hold).to(
         allow_value(DoubleEntry.account(:user_cash, scope: user)).for(:partner_account)
+      )
+    end
+
+    it 'is expected to validate that the user have enough remaining credit limit' do
+      expect(user.remaining_credit_limit).to eq(Money.from_amount(1500))
+
+      user_authorization_hold.amount = Money.from_amount(500)
+      expect(user_authorization_hold).to be_valid
+
+      user_authorization_hold.amount = Money.from_amount(1500)
+      expect(user_authorization_hold).to be_valid
+
+      user_authorization_hold.amount = Money.from_amount(1501)
+      expect(user_authorization_hold).not_to be_valid
+      expect(user_authorization_hold.errors.details[:base]).to have_shape(
+        [
+          {
+            error: :user_remaining_credit_limit_insufficient,
+            user_remaining_credit_limit: Money.from_amount(1500),
+            amount: Money.from_amount(1501)
+          }
+        ]
+      )
+
+      # After user_authorization_hold is created, remaining_credit_limit should
+      # be 1400
+      expect(user.remaining_credit_limit).to eq(Money.from_amount(1400))
+
+      new_user_authorization_hold = Accounting::UserAuthorizationHold.new(
+        Accounting::UserAuthorizationHold.last.attributes.except('id')
+      )
+
+      new_user_authorization_hold.amount = Money.from_amount(500)
+      expect(new_user_authorization_hold).to be_valid
+
+      new_user_authorization_hold.amount = Money.from_amount(1400)
+      expect(new_user_authorization_hold).to be_valid
+
+      new_user_authorization_hold.amount = Money.from_amount(1401)
+      expect(new_user_authorization_hold).not_to be_valid
+      expect(new_user_authorization_hold.errors.details[:base]).to have_shape(
+        [
+          {
+            error: :user_remaining_credit_limit_insufficient,
+            user_remaining_credit_limit: Money.from_amount(1400),
+            amount: Money.from_amount(1401)
+          }
+        ]
       )
     end
   end

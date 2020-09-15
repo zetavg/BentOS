@@ -75,6 +75,7 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   validates :amount, numericality: { greater_than: 0 }, allow_blank: false
   validate :transfer_code_valid
   validate :partner_account_valid
+  validate :user_remaining_credit_limit_enough
 
   # Do not allow calling lifecycle events without saving
   private :capture
@@ -135,6 +136,19 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
     return if transfer.to == partner_account&.identifier
 
     errors.add(:partner_account, :invalid, available_partner_account_identifier: transfer.to)
+  end
+
+  def user_remaining_credit_limit_enough
+    return if user.blank?
+    return if amount.blank?
+    return if user.remaining_credit_limit >= (amount - Money.new(amount_subunit_was || 0))
+
+    errors.add(
+      :base,
+      :user_remaining_credit_limit_insufficient,
+      user_remaining_credit_limit: user.remaining_credit_limit + Money.new(amount_subunit_was || 0),
+      amount: amount
+    )
   end
 
   def wrapped_in_transaction?
