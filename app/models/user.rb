@@ -67,6 +67,10 @@ class User < ApplicationRecord
     authorization_holds.holding.map(&:amount).sum
   end
 
+  def lock_authorization_holds!
+    authorization_holds.lock!
+  end
+
   protected
 
   def password_required?

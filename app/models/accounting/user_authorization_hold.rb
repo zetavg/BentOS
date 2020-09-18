@@ -64,14 +64,6 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
     end
   end
 
-  def transaction(*accounts_to_lock, &_block)
-    DoubleEntry.lock_accounts(user.account, partner_account, *accounts_to_lock) do
-      yield if block_given?
-    end
-  ensure
-    reload
-  end
-
   validates :amount, numericality: { greater_than: 0 }, allow_blank: false
   validate :transfer_code_valid
   validate :partner_account_valid
@@ -110,6 +102,18 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
     end
 
     lock! && _reverse!
+  end
+
+  def accounts_to_lock_during_transaction
+    [user.account, partner_account]
+  end
+
+  def transaction(*more_accounts_to_lock, &_block)
+    DoubleEntry.lock_accounts(*accounts_to_lock_during_transaction, *more_accounts_to_lock) do
+      yield if block_given?
+    end
+  ensure
+    reload
   end
 
   class << self
