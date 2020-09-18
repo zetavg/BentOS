@@ -13,14 +13,15 @@ RSpec::Matchers.define :have_shape do |sample|
   def have_shape?(sample, actual)
     case sample
     when Hash
-      return false unless actual.is_a? Hash
+      return false unless actual.respond_to? :[]
 
       sample.each do |k, v|
         return false unless have_shape?(v, actual[k])
       end
 
     when Array
-      return false unless actual.is_a? Array
+      return false unless actual.respond_to? :[]
+      return false unless actual.respond_to? :any?
 
       sample.each do |s|
         return false unless actual.any? { |a| have_shape?(s, a) }
@@ -42,16 +43,16 @@ RSpec::Matchers.define :have_shape do |sample|
   def actual_as_sample(sample, actual)
     case sample
     when Hash
-      return actual unless actual.is_a? Hash
+      return actual unless actual.respond_to? :[]
 
       keys = sample.keys
 
       Hash[
-        actual.select { |k| keys.include? k }
-              .map { |k, v| [k, actual_as_sample(sample[k], v)] }
+        keys.map { |k| [k, actual[k]] }
+            .map { |k, v| [k, actual_as_sample(sample[k], v)] }
       ]
     when Array
-      return actual unless actual.is_a? Array
+      return actual unless actual.respond_to? :sort_by
 
       actual
         .sort_by { |e| sample.find_index { |se| have_shape?(se, e) } || Float::INFINITY }
