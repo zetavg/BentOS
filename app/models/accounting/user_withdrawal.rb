@@ -7,7 +7,7 @@ class Accounting::UserWithdrawal < ActiveType::Object
   validates :user, presence: true
   validates :amount, numericality: { greater_than: 0 }, allow_blank: false
   validate :account_has_money
-  validate :account_balance_sufficient
+  validate :available_account_balance_sufficient
 
   before_save :transfer_money
 
@@ -21,16 +21,20 @@ class Accounting::UserWithdrawal < ActiveType::Object
 
   def account_has_money
     return if user.blank?
-    return if user.account.balance.positive?
+    return if user.available_account_balance.positive?
 
-    errors.add(:user, :account_no_money, account_balance: user.account.balance.format)
+    errors.add(:user, :account_no_money, available_account_balance: user.available_account_balance.format)
   end
 
-  def account_balance_sufficient
+  def available_account_balance_sufficient
     return unless amount&.positive?
-    return unless user&.account&.balance&.positive?
-    return if user.account.balance.to_d >= amount
+    return unless user&.available_account_balance&.positive?
+    return if user.available_account_balance.to_d >= amount
 
-    errors.add(:amount, :bigger_than_account_balance, account_balance: user.account.balance.format)
+    errors.add(
+      :amount,
+      :bigger_than_available_account_balance,
+      available_account_balance: user.available_account_balance.format
+    )
   end
 end

@@ -10,11 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_25_000003) do
+ActiveRecord::Schema.define(version: 2020_07_25_000005) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "accounting_user_authorization_holds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.string "state", limit: 32, null: false
+    t.bigint "amount_subunit", null: false
+    t.string "transfer_code", null: false
+    t.string "partner_account_identifier", null: false
+    t.string "partner_account_scope_identity"
+    t.bigint "capture_line_id"
+    t.string "detail_type"
+    t.uuid "detail_id"
+    t.jsonb "metadata"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["capture_line_id"], name: "index_accounting_user_authorization_holds_on_capture_line_id"
+    t.index ["detail_type", "detail_id"], name: "index_accounting_user_authorization_holds_on_detail"
+    t.index ["state"], name: "index_accounting_user_authorization_holds_on_state"
+    t.index ["user_id"], name: "index_accounting_user_authorization_holds_on_user_id"
+  end
 
   create_table "double_entry_account_balances", force: :cascade do |t|
     t.string "account", null: false
@@ -45,7 +64,7 @@ ActiveRecord::Schema.define(version: 2020_07_25_000003) do
     t.string "partner_account", null: false
     t.string "partner_scope"
     t.string "detail_type"
-    t.bigint "detail_id"
+    t.uuid "detail_id"
     t.jsonb "metadata"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -92,11 +111,14 @@ ActiveRecord::Schema.define(version: 2020_07_25_000003) do
     t.datetime "locked_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "credit_limit_subunit"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "accounting_user_authorization_holds", "double_entry_lines", column: "capture_line_id"
+  add_foreign_key "accounting_user_authorization_holds", "users"
   add_foreign_key "user_oauth_authentications", "users"
 end

@@ -17,32 +17,79 @@ RSpec.describe Accounting::UserWithdrawal, type: :model do
       expect(user_deposit).not_to(
         allow_value(user_with_account_balance_zero)
           .for(:user)
-          .with_message("has no money in account (account balance is #{Money.from_amount(0).format})")
+          .with_message("has no money in account (available account balance is #{Money.from_amount(0).format})")
+      )
+
+      user_with_available_account_balance_zero = FactoryBot.create(
+        :user,
+        :confirmed,
+        :with_account_balance,
+        account_balance: 10
+      )
+      Accounting::UserAuthorizationHold.create!(
+        user: user_with_available_account_balance_zero,
+        amount: 10,
+        transfer_code: :user_transfer,
+        partner_account: FactoryBot.create(:user, :confirmed).account
+      )
+      expect(user_deposit).not_to(
+        allow_value(user_with_available_account_balance_zero)
+          .for(:user)
+          .with_message("has no money in account (available account balance is #{Money.from_amount(0).format})")
       )
 
       user_with_account_balance_neg = FactoryBot.create(:user, :confirmed, :with_account_balance, account_balance: -1)
       expect(user_deposit).not_to(
         allow_value(user_with_account_balance_neg)
           .for(:user)
-          .with_message("has no money in account (account balance is #{Money.from_amount(-1).format})")
+          .with_message("has no money in account (available account balance is #{Money.from_amount(-1).format})")
+      )
+
+      user_with_available_account_balance_neg = FactoryBot.create(
+        :user,
+        :confirmed,
+        :with_account_balance,
+        account_balance: 10
+      )
+      Accounting::UserAuthorizationHold.create!(
+        user: user_with_available_account_balance_neg,
+        amount: 20,
+        transfer_code: :user_transfer,
+        partner_account: FactoryBot.create(:user, :confirmed).account
+      )
+      expect(user_deposit).not_to(
+        allow_value(user_with_available_account_balance_neg)
+          .for(:user)
+          .with_message("has no money in account (available account balance is #{Money.from_amount(-10).format})")
       )
     end
 
-    it 'is expected to validate that :amount should not be larger then the balance of account' do
-      account_balance = Money.from_amount(10_000)
-      user = FactoryBot.create(:user, :confirmed, :with_account_balance, account_balance: account_balance)
+    it 'is expected to validate that :amount should not be larger then the available balance of account' do
+      user = FactoryBot.create(:user, :confirmed, :with_account_balance, account_balance: Money.from_amount(10_000))
       user_deposit = Accounting::UserWithdrawal.new(user: user)
       expect(user_deposit).to allow_value(1).for(:amount)
       expect(user_deposit).to allow_value(10_000).for(:amount)
       expect(user_deposit).not_to(
         allow_value(20_000)
           .for(:amount)
-          .with_message("must be smaller than the account balance (#{account_balance.format})")
+          .with_message("must be smaller than the available account balance (#{user.available_account_balance.format})")
       )
       expect(user_deposit).not_to(
         allow_value(100_000)
           .for(:amount)
-          .with_message("must be smaller than the account balance (#{account_balance.format})")
+          .with_message("must be smaller than the available account balance (#{user.available_account_balance.format})")
+      )
+
+      Accounting::UserAuthorizationHold.create!(
+        user: user,
+        amount: 9000,
+        transfer_code: :user_transfer,
+        partner_account: FactoryBot.create(:user, :confirmed).account
+      )
+      expect(user_deposit).not_to(
+        allow_value(2000)
+          .for(:amount)
+          .with_message("must be smaller than the available account balance (#{user.available_account_balance.format})")
       )
     end
   end

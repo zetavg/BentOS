@@ -23,7 +23,7 @@ class CreateDoubleEntryTables < ActiveRecord::Migration[6.0]
       t.references 'partner', index: false
       t.string     'partner_account', null: false
       t.string     'partner_scope'
-      t.references 'detail', index: false, polymorphic: true
+      t.references 'detail', index: false, polymorphic: true, type: :uuid
       if ActiveRecord::Base.connection.adapter_name == 'PostgreSQL'
         t.jsonb 'metadata'
       else
