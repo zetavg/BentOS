@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "title": "Menu",
+  "description": "The schema of the data structure to store a menu. It has five properties: \"menu\", \"sections\", \"items\", \"customizations\" and \"customizationOptions\". \"menu\" is a special object which is the entry point of the menu, others are objects which stores sections, items, customizations, and customizationOptions using their UUID as the key and data as the value.",
+  "required": [
+    "menu",
+    "sections",
+    "items"
+  ],
+  "properties": {
+    "menu": {
+      "$id": "#/properties/menu",
+      "type": "object",
+      "title": "The menu schema",
+      "description": "This is the \"entry point\" of the menu. The only required property, \"sectionUuids\", defines the avaliable sections (and their order) on the menu by listing the UUIDs of each section.",
+      "required": [
+        "sectionUuids"
+      ],
+      "properties": {
+        "sectionUuids": {
+          "type": "array",
+          "description": "The UUIDs (key of #/properties/sections) of sections on the menu.",
+          "items": {
+            "ref": "#/definitions/uuid"
+          }
+        }
+      }
+    },
+    "sections": {
+      "$id": "#/properties/sections",
+      "type": "object",
+      "description": "An object that stores all sections, with the uuid (which is used for refrence it) as the key.",
+      "patternProperties": {
+        ".*": { "$ref": "#/definitions/section" }
+      }
+    },
+    "items": {
+      "$id": "#/properties/items",
+      "type": "object",
+      "description": "An object that stores all items, with the uuid (which is used for refrence it) as the key.",
+      "patternProperties": {
+        ".*": { "$ref": "#/definitions/item" }
+      }
+    },
+    "customizations": {
+      "$id": "#/properties/customizations",
+      "type": "object",
+      "description": "An object that stores all customizations, with the uuid (which is used for refrence it) as the key.",
+      "patternProperties": {
+        ".*": { "$ref": "#/definitions/customization" }
+      }
+    },
+    "customizationOptions": {
+      "$id": "#/properties/customizationOptions",
+      "type": "object",
+      "description": "An object that stores all customizationOptions, with the uuid (which is used for refrence it) as the key.",
+      "patternProperties": {
+        ".*": { "$ref": "#/definitions/customizationOption" }
+      }
+    }
+  },
+  "definitions": {
+    "uuid": {
+      "$id": "#uuid",
+      "type": "string",
+      "format": "uuid"
+    },
+    "section": {
+      "$id": "#section",
+      "type": "object",
+      "description": "A section on the menu, it can contain multiple items.",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "itemUuids": {
+          "type": "array",
+          "description": "The UUIDs (key of #/properties/items) of items on the menu.",
+          "items": { "$ref": "#/definitions/uuid" }
+        }
+      }
+    },
+    "item": {
+      "$id": "#item",
+      "type": "object",
+      "description": "A item which can be ordered. It can have none or some customizations.",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "priceSubunits": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The price of this item, in currency subunits."
+        },
+        "customizationUuids": {
+          "type": "array",
+          "description": "The UUIDs (key of #/properties/customizations) of items on the menu.",
+          "items": { "$ref": "#/definitions/uuid" }
+        }
+      },
+      "required": ["name", "priceSubunits"]
+    },
+    "customization": {
+      "$id": "#customization",
+      "type": "object",
+      "description": "A customization for a menu item. It can have one or more options. It can be used by multiple items.",
+      "properties": {
+        "name": { "type": "string" },
+        "maxPermitted": {
+          "type": "integer",
+          "description": "The maximum number of options that the user can select for this customization.",
+          "minimum": 0
+        },
+        "minPermitted": {
+          "type": "integer",
+          "description": "The minimum number of options that the user can select for this customization.",
+          "minimum": 0
+        },
+        "optionUuids": {
+          "type": "array",
+          "description": "The UUIDs (key of #/properties/customizationOptions) of customizationOptions on the menu.",
+          "items": { "$ref": "#/definitions/uuid" }
+        }
+      },
+      "required": ["name", "optionUuids"],
+      "additionalProperties": false
+    },
+    "customizationOption": {
+      "$id": "#customizationOption",
+      "type": "object",
+      "description": "An option for a customization. It can be used by multiple customizations.",
+      "properties": {
+        "name": { "type": "string" },
+        "defaultQuantity": {
+          "type": "integer",
+          "description": "The default selected quantity of this option under an customization.",
+          "minimum": 0
+        },
+        "maxPermitted": {
+          "type": "integer",
+          "description": "The maximum quantity that the user is allowed to select for this option within an customization.",
+          "minimum": 0
+        },
+        "minPermitted": {
+          "type": "integer",
+          "description": "The minimum quantity that the user is allowed to select for this option within an customization.",
+          "minimum": 0
+        },
+        "priceSubunits": {
+          "type": "integer",
+          "description": "Additional price to add on the item per one quantity, in currency subunits."
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    }
+  }
+}
