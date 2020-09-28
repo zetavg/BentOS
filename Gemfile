@@ -40,6 +40,9 @@ gem 'active_type'
 gem 'aasm' # State machine
 gem 'money-rails'
 
+# JSON Schema Validator
+gem 'json-schema'
+
 # User authentication
 gem 'devise'
 

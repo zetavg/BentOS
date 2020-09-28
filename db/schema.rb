@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_25_000005) do
+ActiveRecord::Schema.define(version: 2020_07_25_000006) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -74,6 +74,24 @@ ActiveRecord::Schema.define(version: 2020_07_25_000005) do
     t.index ["scope", "account", "id"], name: "lines_scope_account_id_idx"
   end
 
+  create_table "group_order_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organizer_id", null: false
+    t.string "name", null: false
+    t.boolean "private", default: false, null: false
+    t.jsonb "menu"
+    t.string "state", limit: 32, null: false
+    t.datetime "to_be_closed_at", null: false
+    t.datetime "expected_delivery_time", null: false
+    t.bigint "group_minimum_amount_subunit", default: 0, null: false
+    t.integer "group_minimum_sets", default: 0, null: false
+    t.bigint "group_maximum_amount_subunit"
+    t.integer "group_maximum_sets"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["organizer_id"], name: "index_group_order_groups_on_organizer_id"
+    t.index ["state"], name: "index_group_order_groups_on_state"
+  end
+
   create_table "user_oauth_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id"
     t.string "provider", null: false
@@ -120,5 +138,6 @@ ActiveRecord::Schema.define(version: 2020_07_25_000005) do
 
   add_foreign_key "accounting_user_authorization_holds", "double_entry_lines", column: "capture_line_id"
   add_foreign_key "accounting_user_authorization_holds", "users"
+  add_foreign_key "group_order_groups", "users", column: "organizer_id"
   add_foreign_key "user_oauth_authentications", "users"
 end
