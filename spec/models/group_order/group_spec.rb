@@ -49,7 +49,7 @@ RSpec.describe GroupOrder::Group, type: :model do
       group = FactoryBot.build(:group_order_group)
       group.menu = {
         menu: {
-          sectionUuids: ['a', 'b', 'c']
+          sectionUuids: %w[a b c]
         },
         sections: {
           a: { name: 'A', itemUuids: [] },
@@ -62,7 +62,7 @@ RSpec.describe GroupOrder::Group, type: :model do
 
       group.menu = {
         menu: {
-          sectionUuids: ['a', 'b', 'c']
+          sectionUuids: %w[a b c]
         },
         sections: {
           a: { name: 'A', itemUuids: [] },
@@ -84,11 +84,11 @@ RSpec.describe GroupOrder::Group, type: :model do
       group = FactoryBot.build(:group_order_group)
       group.menu = {
         menu: {
-          sectionUuids: ['foo', 'bar']
+          sectionUuids: %w[foo bar]
         },
         sections: {
-          foo: { name: 'A', itemUuids: ['a', 'b'] },
-          bar: { name: 'A', itemUuids: ['b', 'c'] }
+          foo: { name: 'A', itemUuids: %w[a b] },
+          bar: { name: 'A', itemUuids: %w[b c] }
         },
         items: {
           a: { name: 'A', priceSubunits: 0 },
@@ -100,11 +100,11 @@ RSpec.describe GroupOrder::Group, type: :model do
 
       group.menu = {
         menu: {
-          sectionUuids: ['foo', 'bar']
+          sectionUuids: %w[foo bar]
         },
         sections: {
-          foo: { name: 'A', itemUuids: ['a', 'b'] },
-          bar: { name: 'A', itemUuids: ['b', 'c'] }
+          foo: { name: 'A', itemUuids: %w[a b] },
+          bar: { name: 'A', itemUuids: %w[b c] }
         },
         items: {
           a: { name: 'A', priceSubunits: 0 },
@@ -128,11 +128,11 @@ RSpec.describe GroupOrder::Group, type: :model do
           sectionUuids: ['sec']
         },
         sections: {
-          sec: { name: 'Section', itemUuids: ['foo', 'bar'] }
+          sec: { name: 'Section', itemUuids: %w[foo bar] }
         },
         items: {
-          foo: { name: 'Foo', priceSubunits: 0, customizationUuids: ['a', 'b'] },
-          bar: { name: 'Bar', priceSubunits: 0, customizationUuids: ['a', 'c'] }
+          foo: { name: 'Foo', priceSubunits: 0, customizationUuids: %w[a b] },
+          bar: { name: 'Bar', priceSubunits: 0, customizationUuids: %w[a c] }
         },
         customizations: {
           a: { name: 'A', optionUuids: [] },
@@ -147,11 +147,11 @@ RSpec.describe GroupOrder::Group, type: :model do
           sectionUuids: ['sec']
         },
         sections: {
-          sec: { name: 'Section', itemUuids: ['foo', 'bar'] }
+          sec: { name: 'Section', itemUuids: %w[foo bar] }
         },
         items: {
-          foo: { name: 'Foo', priceSubunits: 0, customizationUuids: ['a', 'b'] },
-          bar: { name: 'Bar', priceSubunits: 0, customizationUuids: ['a', 'c'] }
+          foo: { name: 'Foo', priceSubunits: 0, customizationUuids: %w[a b] },
+          bar: { name: 'Bar', priceSubunits: 0, customizationUuids: %w[a c] }
         },
         customizations: {
           a: { name: 'A', optionUuids: [] },
@@ -172,18 +172,18 @@ RSpec.describe GroupOrder::Group, type: :model do
           sectionUuids: ['sec']
         },
         sections: {
-          sec: { name: 'Section', itemUuids: ['foo', 'bar'] }
+          sec: { name: 'Section', itemUuids: %w[foo bar] }
         },
         items: {
-          foo: { name: 'Foo', priceSubunits: 0, customizationUuids: ['a', 'b'] },
-          bar: { name: 'Bar', priceSubunits: 0, customizationUuids: ['a', 'c'] }
+          foo: { name: 'Foo', priceSubunits: 0, customizationUuids: %w[a b] },
+          bar: { name: 'Bar', priceSubunits: 0, customizationUuids: %w[a c] }
         }
       }
       expect(group).not_to be_valid
       expect(group.errors.details).to have_shape(
         {
           menu: [
-            { error: :customizations_missing, missing_customization_uuids: ['a', 'b', 'c'] }
+            { error: :customizations_missing, missing_customization_uuids: %w[a b c] }
           ]
         }
       )
@@ -199,11 +199,11 @@ RSpec.describe GroupOrder::Group, type: :model do
           sec: { name: 'Section', itemUuids: ['ite'] }
         },
         items: {
-          ite: { name: 'Item', priceSubunits: 0, customizationUuids: ['foo', 'bar'] }
+          ite: { name: 'Item', priceSubunits: 0, customizationUuids: %w[foo bar] }
         },
         customizations: {
-          foo: { name: 'Customization', optionUuids: ['a', 'b'] },
-          bar: { name: 'Customization', optionUuids: ['a', 'c'] }
+          foo: { name: 'Customization', optionUuids: %w[a b] },
+          bar: { name: 'Customization', optionUuids: %w[a c] }
         },
         customizationOptions: {
           a: { name: 'A' },
@@ -221,11 +221,11 @@ RSpec.describe GroupOrder::Group, type: :model do
           sec: { name: 'Section', itemUuids: ['ite'] }
         },
         items: {
-          ite: { name: 'Item', priceSubunits: 0, customizationUuids: ['foo', 'bar'] }
+          ite: { name: 'Item', priceSubunits: 0, customizationUuids: %w[foo bar] }
         },
         customizations: {
-          foo: { name: 'Customization', optionUuids: ['a', 'b'] },
-          bar: { name: 'Customization', optionUuids: ['a', 'c'] }
+          foo: { name: 'Customization', optionUuids: %w[a b] },
+          bar: { name: 'Customization', optionUuids: %w[a c] }
         },
         customizationOptions: {
           a: { name: 'A' },
