@@ -27,6 +27,16 @@ class GroupOrder::Group < ApplicationRecord
   validate :menu_all_customization_uuids_exists
   validate :menu_all_customization_option_uuids_exists
 
+  def avaliable_menu_items
+    (menu.dig('menu', 'sectionUuids') || [])
+      .map { |section_id| menu.dig('sections', section_id) }
+      .compact
+      .map { |section| section['itemUuids'] }
+      .flatten
+      .uniq
+      .index_with { |item_id| menu.dig('items', item_id) }
+  end
+
   private
 
   def menu_matches_json_schema

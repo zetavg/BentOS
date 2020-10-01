@@ -242,4 +242,38 @@ RSpec.describe GroupOrder::Group, type: :model do
       )
     end
   end
+
+  describe '#avaliable_menu_items' do
+    it 'returns menu items that are reachable from the menu' do
+      group = FactoryBot.build(:group_order_group)
+      group.menu = {
+        menu: {
+          sectionUuids: %w[s1 s2 s3]
+        },
+        sections: {
+          s1: { name: 'Section 1', itemUuids: %w[i1 i2] },
+          s2: { name: 'Section 2', itemUuids: ['i3'] },
+          s3: { name: 'Section 3', itemUuids: %w[i1 i5] },
+          s4: { name: 'Section 4', itemUuids: ['i6'] } # Not referenced in menu.sectionUuids
+        },
+        items: {
+          i1: { name: 'Item 1', priceSubunits: 0 },
+          i2: { name: 'Item 2', priceSubunits: 0 },
+          i3: { name: 'Item 3', priceSubunits: 0 },
+          i4: { name: 'Item 4', priceSubunits: 0 },  # Not referenced by any section
+          i5: { name: 'Item 5', priceSubunits: 0 },
+          i6: { name: 'Item 6', priceSubunits: 0 }   # Only referenced by Section 4
+        }
+      }
+
+      expect(group.avaliable_menu_items).to have_shape(
+        {
+          'i1' => { 'name' => 'Item 1', 'priceSubunits' => 0 },
+          'i2' => { 'name' => 'Item 2', 'priceSubunits' => 0 },
+          'i3' => { 'name' => 'Item 3', 'priceSubunits' => 0 },
+          'i5' => { 'name' => 'Item 5', 'priceSubunits' => 0 }
+        }
+      )
+    end
+  end
 end
