@@ -6,7 +6,7 @@ class CreateGroupOrderGroups < ActiveRecord::Migration[6.0]
       t.string :name, null: false
       t.boolean :private, null: false, default: false
 
-      t.jsonb :menu
+      t.jsonb :menu, null: false
 
       t.string :state, limit: 32, index: true, null: false
 
