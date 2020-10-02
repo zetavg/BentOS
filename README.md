@@ -15,6 +15,10 @@ The **Bento** **O**peration **S**ystem.
 
 ## Development
 
+### Guard
+
+Start `bin/guard` to automatically run related test cases when files are modified during development.
+
 ### Tasks
 
 - `bin/rake develop:bootstrap`: Fill the database with sample data.
