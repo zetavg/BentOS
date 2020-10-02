@@ -2,6 +2,7 @@
 
 require 'rails_helper'
 
+# rubocop:disable Layout/LineLength
 RSpec.describe GroupOrder::Group, type: :model do
   describe 'relations' do
     it { is_expected.to belong_to(:organizer) }
@@ -277,3 +278,4 @@ RSpec.describe GroupOrder::Group, type: :model do
     end
   end
 end
+# rubocop:enable Layout/LineLength
