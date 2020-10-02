@@ -242,6 +242,42 @@ RSpec.describe GroupOrder::Group, type: :model do
         }
       )
     end
+
+    it "is expected to validate that all for all customizations in :menu, the sum of it's option's minPermitted isn't bigger then the customization's maxPermitted" do
+      group = FactoryBot.build(:group_order_group)
+      group.menu = {
+        menu: {
+          sectionUuids: ['sec']
+        },
+        sections: {
+          sec: { name: 'Section', itemUuids: ['ite'] }
+        },
+        items: {
+          ite: { name: 'Item', priceSubunits: 0, customizationUuids: %w[c1 c2 c3] }
+        },
+        customizations: {
+          c1: { name: 'Customization 1', optionUuids: %w[o1], maxPermitted: 1 },
+          c2: { name: 'Customization 2', optionUuids: %w[o1 o2], maxPermitted: 2 },
+          c3: { name: 'Customization 3', optionUuids: %w[o1 o2 o3 o4 o5] }
+        },
+        customizationOptions: {
+          o1: { name: 'Option 1', minPermitted: 1 },
+          o2: { name: 'Option 2', minPermitted: 2 },
+          o3: { name: 'Option 3', minPermitted: 3 }
+        }
+      }
+      expect(group).not_to be_valid
+      expect(group.errors.details).to have_shape(
+        {
+          menu: [
+            {
+              error: :customization_option_min_permitted_conflicts_with_customization_max_permitted,
+              customization_uuids: %w[c2]
+            }
+          ]
+        }
+      )
+    end
   end
 
   describe '#avaliable_menu_items' do

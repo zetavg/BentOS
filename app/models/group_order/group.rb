@@ -26,6 +26,7 @@ class GroupOrder::Group < ApplicationRecord
   validate :menu_all_item_uuids_exists
   validate :menu_all_customization_uuids_exists
   validate :menu_all_customization_option_uuids_exists
+  validate :menu_all_customization_option_min_permitted_not_conflict_with_max_permitted
 
   def avaliable_menu_items
     (menu.dig('menu', 'sectionUuids') || [])
@@ -114,6 +115,39 @@ class GroupOrder::Group < ApplicationRecord
       :menu,
       :customization_options_missing,
       missing_customization_option_uuids: missing_customization_option_uuids
+    )
+  end
+
+  def menu_all_customization_option_min_permitted_not_conflict_with_max_permitted
+    return unless menu.is_a? Hash
+
+    customizations = menu['customizations']
+    return unless customizations.is_a? Hash
+
+    conflict_customization_uuids = []
+
+    customizations.each do |uuid, customization|
+      next unless customization.is_a? Hash
+      next unless customization['maxPermitted'].is_a? Integer
+
+      option_uuids = customization['optionUuids'] || []
+      min_permitted_options_count =
+        option_uuids.map { |o_uuid| menu.dig('customizationOptions', o_uuid) }
+                    .filter { |o| o.is_a? Hash }
+                    .map { |o| o['minPermitted'] }
+                    .sum
+
+      next unless min_permitted_options_count > customization['maxPermitted']
+
+      conflict_customization_uuids.push uuid
+    end
+
+    return if conflict_customization_uuids.empty?
+
+    errors.add(
+      :menu,
+      :customization_option_min_permitted_conflicts_with_customization_max_permitted,
+      customization_uuids: conflict_customization_uuids
     )
   end
 end
