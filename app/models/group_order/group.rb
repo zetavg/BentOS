@@ -29,7 +29,10 @@ class GroupOrder::Group < ApplicationRecord
   validate :menu_all_customization_option_min_permitted_not_conflict_with_max_permitted
 
   def avaliable_menu_items
-    (menu.dig('menu', 'sectionUuids') || [])
+    section_uuids = menu.dig('menu', 'sectionUuids')
+    return {} unless section_uuids.is_a? Array
+
+    section_uuids
       .map { |section_id| menu.dig('sections', section_id) }
       .compact
       .map { |section| section['itemUuids'] }
@@ -135,6 +138,7 @@ class GroupOrder::Group < ApplicationRecord
         option_uuids.map { |o_uuid| menu.dig('customizationOptions', o_uuid) }
                     .filter { |o| o.is_a? Hash }
                     .map { |o| o['minPermitted'] }
+                    .compact
                     .sum
 
       next unless min_permitted_options_count > customization['maxPermitted']

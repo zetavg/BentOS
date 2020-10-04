@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_25_000006) do
+ActiveRecord::Schema.define(version: 2020_07_25_000007) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -78,7 +78,7 @@ ActiveRecord::Schema.define(version: 2020_07_25_000006) do
     t.uuid "organizer_id", null: false
     t.string "name", null: false
     t.boolean "private", default: false, null: false
-    t.jsonb "menu"
+    t.jsonb "menu", null: false
     t.string "state", limit: 32, null: false
     t.datetime "to_be_closed_at", null: false
     t.datetime "expected_delivery_time", null: false
@@ -90,6 +90,19 @@ ActiveRecord::Schema.define(version: 2020_07_25_000006) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["organizer_id"], name: "index_group_order_groups_on_organizer_id"
     t.index ["state"], name: "index_group_order_groups_on_state"
+  end
+
+  create_table "group_order_orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.uuid "group_id", null: false
+    t.jsonb "content", null: false
+    t.boolean "private", default: false, null: false
+    t.bigint "amount_subunit", null: false
+    t.uuid "authorization_hold_uuid", default: -> { "gen_random_uuid()" }, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["group_id"], name: "index_group_order_orders_on_group_id"
+    t.index ["user_id"], name: "index_group_order_orders_on_user_id"
   end
 
   create_table "user_oauth_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -139,5 +152,7 @@ ActiveRecord::Schema.define(version: 2020_07_25_000006) do
   add_foreign_key "accounting_user_authorization_holds", "double_entry_lines", column: "capture_line_id"
   add_foreign_key "accounting_user_authorization_holds", "users"
   add_foreign_key "group_order_groups", "users", column: "organizer_id"
+  add_foreign_key "group_order_orders", "group_order_groups", column: "group_id"
+  add_foreign_key "group_order_orders", "users"
   add_foreign_key "user_oauth_authentications", "users"
 end
