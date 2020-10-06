@@ -2,7 +2,11 @@
 
 require Rails.root.join('lib', 'schemas', 'menu_order_schema')
 
+# TODO: Try to refactor this
+# rubocop:disable Metrics/ClassLength
 class GroupOrder::Order < ApplicationRecord
+  monetize :amount_subunit, as: :amount, allow_nil: true
+
   belongs_to :user
   belongs_to :group
 
@@ -12,6 +16,8 @@ class GroupOrder::Order < ApplicationRecord
   validate :content_all_item_customization_options_avaliable_on_customization
   validate :content_all_item_customization_options_count_in_permitted_range
   validate :content_all_item_customization_option_quantity_in_permitted_range
+
+  before_validation :fill_in_calculated_data
 
   private
 
@@ -351,4 +357,111 @@ class GroupOrder::Order < ApplicationRecord
   # rubocop:enable Metrics/CyclomaticComplexity
   # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/BlockLength
+
+  def fill_in_calculated_data
+    fill_in_calculated_data_in_content
+    fill_in_amount_subunit
+  end
+
+  # TODO: Try to refactor this
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/BlockNesting
+  def fill_in_calculated_data_in_content
+    menu = group&.menu
+    return unless menu.is_a? Hash
+
+    return unless content.is_a? Hash
+
+    items = content['items']
+    return unless items.is_a? Array
+
+    content['items'] = items.map do |item|
+      if item.is_a? Hash
+        item_name = menu.dig('items', item['uuid'], 'name')
+        item_price_subunits = menu.dig('items', item['uuid'], 'priceSubunits')
+        item = item.merge({ 'name' => item_name, 'priceSubunits' => item_price_subunits })
+
+        customizations = item['customizations']
+        if customizations.is_a? Hash
+          customizations = Hash[
+            customizations.map do |customization_uuid, customization|
+              next unless customization.is_a? Hash
+
+              customization_name = menu.dig('customizations', customization_uuid, 'name')
+              customization = customization.merge({ 'name' => customization_name })
+
+              options = customization['options']
+              if options.is_a? Hash
+                options = Hash[
+                  options.map do |option_uuid, option|
+                    next unless option.is_a? Hash
+
+                    option_name = menu.dig('customizationOptions', option_uuid, 'name')
+                    option = option.merge({ 'name' => option_name })
+
+                    option_price_subunits = menu.dig('customizationOptions', option_uuid, 'priceSubunits')
+                    option = if option_price_subunits.present?
+                               option.merge({ 'priceSubunits' => option_price_subunits })
+                             else
+                               option.except('priceSubunits')
+                             end
+
+                    [option_uuid, option]
+                  end
+                ]
+                customization = customization.merge({ 'options' => options })
+              end
+
+              [customization_uuid, customization]
+            end
+          ]
+          item = item.merge({ 'customizations' => customizations })
+        end
+      end
+
+      item
+    end
+  end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/BlockNesting
+
+  # TODO: Try to refactor this
+  # rubocop:disable Metrics/AbcSize
+  def fill_in_amount_subunit
+    return unless content.is_a? Hash
+
+    items = content['items']
+    return unless items.is_a? Array
+
+    item_amounts = items.map do |item|
+      item_amount = 0
+
+      if item.is_a? Hash
+        item_amount += item['priceSubunits'] if item['priceSubunits'].is_a? Integer
+
+        if item['customizations'].is_a? Hash
+          item['customizations'].each_value do |customization|
+            next unless customization['options'].is_a? Hash
+
+            customization['options'].each_value do |option|
+              next unless option['priceSubunits'].is_a? Integer
+              next unless option['quantity'].is_a? Integer
+
+              item_amount += option['priceSubunits'] * option['quantity']
+            end
+          end
+        end
+
+        item_amount *= item['quantity']
+      end
+
+      item_amount
+    end
+
+    self.amount = Money.new(item_amounts.sum)
+  end
+  # rubocop:enable Metrics/AbcSize
 end
+# rubocop:enable Metrics/ClassLength

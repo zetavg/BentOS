@@ -697,5 +697,356 @@ RSpec.describe GroupOrder::Order, type: :model do
       )
     end
   end
+
+  describe 'calculated content or attributes' do
+    let(:group) do
+      FactoryBot.create(
+        :group_order_group,
+        menu: {
+          menu: {
+            sectionUuids: %w[s1 s2 s3]
+          },
+          sections: {
+            s1: { name: 'Section 1', itemUuids: %w[i1 i2] },
+            s2: { name: 'Section 2', itemUuids: %w[i3 i4] },
+            s3: { name: 'Section 3', itemUuids: %w[i5] }
+          },
+          items: {
+            i1: { name: 'Item 1', priceSubunits: 100_00, customizationUuids: %w[c1 c2 c3] },
+            i2: { name: 'Item 2', priceSubunits: 200_00, customizationUuids: %w[c1 c2 c3] },
+            i3: { name: 'Item 3', priceSubunits: 300_00, customizationUuids: %w[c1 c2 c3] },
+            i4: { name: 'Item 4', priceSubunits: 400_00, customizationUuids: %w[c1 c2 c3] },
+            i5: { name: 'Item 5', priceSubunits: 500_00, customizationUuids: %w[c1 c2 c3] }
+          },
+          customizations: {
+            c1: { name: 'Customization 1', optionUuids: %w[o1 o2] },
+            c2: { name: 'Customization 2', optionUuids: %w[o2 o3 o4] },
+            c3: { name: 'Customization 3', optionUuids: %w[o3 o4 o5] }
+          },
+          customizationOptions: {
+            o1: { name: 'Option 1' },
+            o2: { name: 'Option 2' },
+            o3: { name: 'Option 3', priceSubunits: 10_00 },
+            o4: { name: 'Option 4', priceSubunits: 20_00 },
+            o5: { name: 'Option 5', priceSubunits: 30_00 }
+          }
+        }
+      )
+    end
+
+    it 'calculates and fills the :amount by :content' do
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            { 'uuid' => 'i1', 'quantity' => 1 }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      expect(order.amount).to eq(Money.from_amount(100))
+
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            {
+              'uuid' => 'i1',
+              'customizations' => {
+                'c1' => {
+                  'options' => {
+                    'o1' => { 'quantity': 1 },
+                    'o2' => { 'quantity': 2 }
+                  }
+                },
+                'c3' => {
+                  'options' => {
+                    'o3' => { 'quantity': 5 },
+                    'o4' => { 'quantity': 1 }
+                  }
+                }
+              },
+              'quantity' => 1
+            }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      expect(order.amount).to eq(Money.from_amount(170))
+
+      order.content['items'][0]['quantity'] = 2
+      expect(order).to be_valid
+      expect(order.amount).to eq(Money.from_amount(170 * 2))
+
+      order.content['items'].push order.content['items'][0]
+      expect(order).to be_valid
+      expect(order.amount).to eq(Money.from_amount(170 * 4))
+
+      order.content['items'][0]['quantity'] = 3
+      expect(order).to be_valid
+      expect(order.amount).to eq(Money.from_amount(170 * 3 + 170 * 2))
+
+      order.content['items'][0]['customizations']['c3']['options']['o5'] = { 'quantity' => 10 }
+      expect(order).to be_valid
+      expect(order.amount).to eq(Money.from_amount((170 + 300) * 3 + 170 * 2))
+    end
+
+    it 'calculates and fills the `name` for every item in :content before validation' do
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            { 'uuid' => 'i1', 'quantity' => 1, 'name' => 'This should be ignored' },
+            { 'uuid' => 'i1', 'quantity' => 2 },
+            { 'uuid' => 'i3', 'quantity' => 3 },
+            { 'uuid' => 'i2', 'quantity' => 4 },
+            { 'uuid' => 'i1', 'quantity' => 5 },
+            { 'uuid' => 'i4', 'quantity' => 1 },
+            { 'uuid' => 'i5', 'quantity' => 2 }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      expect(order.content['items']).to have_shape(
+        [
+          { 'uuid' => 'i1', 'quantity' => 1, 'name' => 'Item 1' },
+          { 'uuid' => 'i1', 'quantity' => 2, 'name' => 'Item 1' },
+          { 'uuid' => 'i3', 'quantity' => 3, 'name' => 'Item 3' },
+          { 'uuid' => 'i2', 'quantity' => 4, 'name' => 'Item 2' },
+          { 'uuid' => 'i1', 'quantity' => 5, 'name' => 'Item 1' },
+          { 'uuid' => 'i4', 'quantity' => 1, 'name' => 'Item 4' },
+          { 'uuid' => 'i5', 'quantity' => 2, 'name' => 'Item 5' }
+        ]
+      )
+    end
+
+    it 'calculates and fills the `price` for every item in :content before validation' do
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            # priceSubunits on items should be ignored
+            { 'uuid' => 'i1', 'quantity' => 1, 'priceSubunits' => 900_00 },
+            { 'uuid' => 'i2', 'quantity' => 2 },
+            { 'uuid' => 'i3', 'quantity' => 3 },
+            { 'uuid' => 'i4', 'quantity' => 4 },
+            { 'uuid' => 'i5', 'quantity' => 5 }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      expect(order.content['items']).to have_shape(
+        [
+          { 'uuid' => 'i1', 'quantity' => 1, 'priceSubunits' => 100_00 },
+          { 'uuid' => 'i2', 'quantity' => 2, 'priceSubunits' => 200_00 },
+          { 'uuid' => 'i3', 'quantity' => 3, 'priceSubunits' => 300_00 },
+          { 'uuid' => 'i4', 'quantity' => 4, 'priceSubunits' => 400_00 },
+          { 'uuid' => 'i5', 'quantity' => 5, 'priceSubunits' => 500_00 }
+        ]
+      )
+    end
+
+    it 'calculates and fills the `name` for every customization for every `item` in :content before validation' do
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            {
+              'uuid' => 'i1',
+              'quantity' => 1,
+              'customizations' => {
+                'c1' => {
+                  'name' => 'This should be ignored',
+                  'options' => {
+                    'o1' => { 'quantity' => 1 }
+                  }
+                },
+                'c2' => {
+                  'options' => {
+                    'o2' => { 'quantity' => 1 }
+                  }
+                }
+              }
+            },
+            {
+              'uuid' => 'i2',
+              'quantity' => 2,
+              'customizations' => {
+                'c3' => {
+                  'options' => {
+                    'o3' => { 'quantity' => 1 }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      expect(order.content['items']).to have_shape(
+        [
+          {
+            'uuid' => 'i1',
+            'quantity' => 1,
+            'customizations' => {
+              'c1' => { 'name' => 'Customization 1' },
+              'c2' => { 'name' => 'Customization 2' }
+            }
+          },
+          {
+            'uuid' => 'i2',
+            'quantity' => 2,
+            'customizations' => {
+              'c3' => { 'name' => 'Customization 3' }
+            }
+          }
+        ]
+      )
+    end
+
+    it 'calculates and fills the `name` for every option for every customization for every `item` in :content before validation' do
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            {
+              'uuid' => 'i1',
+              'quantity' => 1,
+              'customizations' => {
+                'c1' => {
+                  'options' => {
+                    'o1' => { 'quantity' => 1, 'name' => 'This should be ignored' }
+                  }
+                },
+                'c2' => {
+                  'options' => {
+                    'o2' => { 'quantity' => 2 }
+                  }
+                }
+              }
+            },
+            {
+              'uuid' => 'i2',
+              'quantity' => 2,
+              'customizations' => {
+                'c3' => {
+                  'options' => {
+                    'o3' => { 'quantity' => 3 },
+                    'o4' => { 'quantity' => 4 },
+                    'o5' => { 'quantity' => 5 }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      expect(order.content['items']).to have_shape(
+        [
+          {
+            'uuid' => 'i1',
+            'quantity' => 1,
+            'customizations' => {
+              'c1' => {
+                'options' => {
+                  'o1' => { 'quantity' => 1, 'name' => 'Option 1' }
+                }
+              },
+              'c2' => {
+                'options' => {
+                  'o2' => { 'quantity' => 2, 'name' => 'Option 2' }
+                }
+              }
+            }
+          },
+          {
+            'uuid' => 'i2',
+            'quantity' => 2,
+            'customizations' => {
+              'c3' => {
+                'options' => {
+                  'o3' => { 'quantity' => 3, 'name' => 'Option 3' },
+                  'o4' => { 'quantity' => 4, 'name' => 'Option 4' },
+                  'o5' => { 'quantity' => 5, 'name' => 'Option 5' }
+                }
+              }
+            }
+          }
+        ]
+      )
+    end
+
+    it 'calculates and fills the `priceSubunits` for every option for every customization for every item in :content before validation' do
+      order = FactoryBot.build(
+        :group_order_order,
+        group: group,
+        content: {
+          'items' => [
+            {
+              'uuid' => 'i1',
+              'quantity' => 1,
+              'customizations' => {
+                'c1' => {
+                  'options' => {
+                    # priceSubunits should be removed
+                    'o1' => { 'quantity' => 1, 'priceSubunits' => 10_00 }
+                  }
+                },
+                'c2' => {
+                  'options' => {
+                    'o2' => { 'quantity' => 2 }
+                  }
+                }
+              }
+            },
+            {
+              'uuid' => 'i2',
+              'quantity' => 2,
+              'customizations' => {
+                'c3' => {
+                  'options' => {
+                    'o3' => { 'quantity' => 3 },
+                    'o4' => { 'quantity' => 4 },
+                    'o5' => { 'quantity' => 5 }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      )
+      expect(order).to be_valid
+      o1 = order.content.dig('items', 0, 'customizations', 'c1', 'options', 'o1')
+      expect(o1['quantity']).to eq(1)
+      expect(o1).not_to have_key('priceSubunits')
+      o2 = order.content.dig('items', 0, 'customizations', 'c2', 'options', 'o2')
+      expect(o2['quantity']).to eq(2)
+      expect(o2).not_to have_key('priceSubunits')
+      expect(order.content['items']).to have_shape(
+        [
+          {
+            'uuid' => 'i2',
+            'quantity' => 2,
+            'customizations' => {
+              'c3' => {
+                'options' => {
+                  'o3' => { 'quantity' => 3, 'priceSubunits' => 10_00 },
+                  'o4' => { 'quantity' => 4, 'priceSubunits' => 20_00 },
+                  'o5' => { 'quantity' => 5, 'priceSubunits' => 30_00 }
+                }
+              }
+            }
+          }
+        ]
+      )
+    end
+  end
 end
 # rubocop:enable Layout/LineLength
