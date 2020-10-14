@@ -41,6 +41,10 @@ class GroupOrder::Group < ApplicationRecord
       .index_with { |item_id| menu.dig('items', item_id) }
   end
 
+  def account
+    DoubleEntry.account(:group_account, scope: self)
+  end
+
   private
 
   def menu_matches_json_schema
