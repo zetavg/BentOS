@@ -10,6 +10,7 @@ class GroupOrder::Group < ApplicationRecord
 
   aasm column: :state, create_scopes: false, whiny_persistence: true do
     state :open, initial: true
+    state :locked
   end
 
   belongs_to :organizer, class_name: 'User', inverse_of: :organized_groups
