@@ -15,6 +15,12 @@ class GroupOrder::Order < ApplicationRecord
 
   belongs_to :user
   belongs_to :group
+  # rubocop:disable Rails/InverseOf
+  belongs_to :authorization_hold,
+             class_name: 'Accounting::UserAuthorizationHold',
+             foreign_key: :authorization_hold_uuid,
+             optional: true
+  # rubocop:enable Rails/InverseOf
 
   validate :content_matches_json_schema
   validate :content_all_items_reachable_in_menu

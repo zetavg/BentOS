@@ -7,6 +7,7 @@ RSpec.describe GroupOrder::Order, type: :model do
   describe 'relations' do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to belong_to(:group) }
+    it { is_expected.to belong_to(:authorization_hold).optional }
   end
 
   describe 'validations' do
