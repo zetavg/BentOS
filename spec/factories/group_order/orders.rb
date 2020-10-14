@@ -11,7 +11,7 @@ FactoryBot.define do
 
       {
         items:
-          Array.new(rand(1..[avaliable_items.length, 4].min) || 0)
+          Array.new(rand(1..[avaliable_items.length, 2].min) || 0)
                .map { avaliable_items.to_a.sample }
                .map do |uuid, item|
                  c_uuids = item['customizationUuids'] || []
@@ -93,5 +93,12 @@ FactoryBot.define do
       }
     end
     private { false }
+
+    to_create do |order|
+      order_placement = GroupOrder::OrderPlacement.new(user: order.user, group: order.group, content: order.content)
+      order_placement.save!
+      order.id = order_placement.order.id
+      order.reload
+    end
   end
 end

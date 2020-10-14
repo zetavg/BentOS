@@ -11,7 +11,7 @@ RSpec.describe GroupOrder::Order, type: :model do
 
   describe 'validations' do
     it 'is expected to validate that :content is in line with the JSON Schema' do
-      order = FactoryBot.build(:group_order_order)
+      order = FactoryBot.build(:group_order_order, _really_update: true)
       expect(order).to be_valid
 
       order.content = nil
@@ -60,7 +60,7 @@ RSpec.describe GroupOrder::Order, type: :model do
           }
         }
       )
-      order = FactoryBot.build(:group_order_order, group: group)
+      order = FactoryBot.build(:group_order_order, group: group, _really_update: true)
       expect(order).to be_valid
 
       order.content = {
@@ -121,7 +121,7 @@ RSpec.describe GroupOrder::Order, type: :model do
           }
         }
       )
-      order = FactoryBot.build(:group_order_order, group: group)
+      order = FactoryBot.build(:group_order_order, group: group, _really_update: true)
       expect(order).to be_valid
 
       order.content = {
@@ -223,7 +223,7 @@ RSpec.describe GroupOrder::Order, type: :model do
           }
         }
       )
-      order = FactoryBot.build(:group_order_order, group: group)
+      order = FactoryBot.build(:group_order_order, group: group, _really_update: true)
       expect(order).to be_valid
 
       order.content = {
@@ -343,7 +343,7 @@ RSpec.describe GroupOrder::Order, type: :model do
           }
         }
       )
-      order = FactoryBot.build(:group_order_order, group: group)
+      order = FactoryBot.build(:group_order_order, group: group, _really_update: true)
       expect(order).to be_valid
 
       order.content = {
@@ -528,7 +528,7 @@ RSpec.describe GroupOrder::Order, type: :model do
           }
         }
       )
-      order = FactoryBot.build(:group_order_order, group: group)
+      order = FactoryBot.build(:group_order_order, group: group, _really_update: true)
       expect(order).to be_valid
 
       order.content = {
@@ -742,7 +742,8 @@ RSpec.describe GroupOrder::Order, type: :model do
           'items' => [
             { 'uuid' => 'i1', 'quantity' => 1 }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       expect(order.amount).to eq(Money.from_amount(100))
@@ -771,7 +772,8 @@ RSpec.describe GroupOrder::Order, type: :model do
               'quantity' => 1
             }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       expect(order.amount).to eq(Money.from_amount(170))
@@ -807,7 +809,8 @@ RSpec.describe GroupOrder::Order, type: :model do
             { 'uuid' => 'i4', 'quantity' => 1 },
             { 'uuid' => 'i5', 'quantity' => 2 }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       expect(order.content['items']).to have_shape(
@@ -836,7 +839,8 @@ RSpec.describe GroupOrder::Order, type: :model do
             { 'uuid' => 'i4', 'quantity' => 4 },
             { 'uuid' => 'i5', 'quantity' => 5 }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       expect(order.content['items']).to have_shape(
@@ -885,7 +889,8 @@ RSpec.describe GroupOrder::Order, type: :model do
               }
             }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       expect(order.content['items']).to have_shape(
@@ -945,7 +950,8 @@ RSpec.describe GroupOrder::Order, type: :model do
               }
             }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       expect(order.content['items']).to have_shape(
@@ -1020,7 +1026,8 @@ RSpec.describe GroupOrder::Order, type: :model do
               }
             }
           ]
-        }
+        },
+        _really_update: true
       )
       expect(order).to be_valid
       o1 = order.content.dig('items', 0, 'customizations', 'c1', 'options', 'o1')

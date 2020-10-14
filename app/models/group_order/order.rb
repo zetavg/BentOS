@@ -5,6 +5,12 @@ require Rails.root.join('lib', 'schemas', 'menu_order_schema')
 # TODO: Try to refactor this
 # rubocop:disable Metrics/ClassLength
 class GroupOrder::Order < ApplicationRecord
+  include Immutable
+
+  # rubocop:disable Layout/LineLength
+  immutable message: 'GroupOrder::Order is not meant to be edited directly, please use `GroupOrder::OrderPlacement` to place an order ...'
+  # rubocop:enable Layout/LineLength
+
   monetize :amount_subunit, as: :amount, allow_nil: true
 
   belongs_to :user
