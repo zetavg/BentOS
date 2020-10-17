@@ -17,6 +17,23 @@ RSpec.describe GroupOrder::Group, type: :model do
     it { is_expected.to validate_numericality_of(:group_maximum_amount).is_greater_than(0) }
     it { is_expected.to validate_numericality_of(:group_maximum_sets).is_greater_than(0) }
 
+    it 'is expected to validate that :state is immutable' do
+      group = FactoryBot.build(:group_order_group)
+      expect(group).to be_valid
+
+      group.state = :locked
+      expect(group).not_to be_valid
+      expect(group.errors.details).to have_shape({ base: [{ error: :immutable, changed_attribute_names: [:state] }] })
+
+      group.state = :open # initial state should be accepted
+      expect(group).to be_valid
+      group.save!
+
+      group.state = :locked
+      expect(group).not_to be_valid
+      expect(group.errors.details).to have_shape({ base: [{ error: :immutable, changed_attribute_names: [:state] }] })
+    end
+
     it 'is expected to validate that :menu is in line with the JSON Schema' do
       group = FactoryBot.build(:group_order_group)
       expect(group).to be_valid

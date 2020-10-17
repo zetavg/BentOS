@@ -53,7 +53,9 @@ RSpec.describe GroupOrder::OrderUpdate, type: :model do
       expect(order_update).to be_valid
 
       group.state = :locked
+      group._really_update = true # bypass the state immutable protect
       group.save!
+      group._really_update = false
       expect(order_placement).not_to be_valid
       expect(order_placement.errors.details).to have_shape(
         { group: [{ error: :not_open, state: 'locked' }] }

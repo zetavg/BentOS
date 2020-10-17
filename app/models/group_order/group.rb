@@ -13,6 +13,10 @@ class GroupOrder::Group < ApplicationRecord
     state :locked
   end
 
+  immutable unless: -> { state_was.nil? && ['open', nil].include?(state) },
+            attributes: [:state],
+            message: 'The state of GroupOrder::Order is not meant to be changed directly'
+
   belongs_to :organizer, class_name: 'User', inverse_of: :organized_groups
 
   validates :name, presence: true
