@@ -84,6 +84,8 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'spring-commands-rspec'
+  gem 'spring-commands-rubocop'
   # Allow us to automate various tasks whenever file or directories are modified during development
   gem 'guard'
   # Allow us to automatically & intelligently launch specs when files are modified
