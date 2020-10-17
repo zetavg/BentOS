@@ -8,7 +8,7 @@ class GroupOrder::Order < ApplicationRecord
   include Immutable
 
   # rubocop:disable Layout/LineLength
-  immutable message: 'GroupOrder::Order is not meant to be edited directly, please use `GroupOrder::OrderPlacement` to place an order ...'
+  immutable message: 'GroupOrder::Order is not meant to be edited directly, please use `GroupOrder::OrderPlacement` to place a new order and use `GroupOrder::OrderUpdate` to update an existing order'
   # rubocop:enable Layout/LineLength
 
   monetize :amount_subunit, as: :amount, allow_nil: true

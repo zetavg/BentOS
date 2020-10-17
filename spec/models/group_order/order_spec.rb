@@ -11,6 +11,22 @@ RSpec.describe GroupOrder::Order, type: :model do
   end
 
   describe 'validations' do
+    it 'is immutable' do
+      user = FactoryBot.create(
+        :user,
+        :confirmed,
+        :with_account_balance,
+        account_balance: 5000,
+        credit_limit_subunit: 0
+      )
+      order = FactoryBot.create(:group_order_order, user: user)
+      expect(order).to be_valid
+
+      order.user = FactoryBot.create(:user, :confirmed)
+      expect(order).not_to be_valid
+      expect(order.errors.details).to have_shape({ base: [{ error: :immutable }] })
+    end
+
     it 'is expected to validate that :content is in line with the JSON Schema' do
       order = FactoryBot.build(:group_order_order, _really_update: true)
       expect(order).to be_valid

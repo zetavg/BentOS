@@ -141,5 +141,28 @@ RSpec.describe GroupOrder::OrderPlacement, type: :model do
       expect(order_placement.order.authorization_hold.partner_account).to eq(group.account)
       expect(order_placement.order.authorization_hold.detail).to eq(order_placement.order)
     end
+
+    describe 'created order' do
+      let(:created_order) do
+        order_placement.content = {
+          items: [
+            { uuid: 'i1', quantity: 1 },
+            { uuid: 'i2', quantity: 1 }
+          ]
+        }
+        order_placement.save!
+        order_placement.order
+      end
+
+      it 'is immutable' do
+        expect(created_order).to be_valid
+
+        created_order.content = {
+          items: [{ uuid: 'i1', quantity: 1 }]
+        }
+        expect(created_order).not_to be_valid
+        expect(created_order.errors.details).to have_shape({ base: [{ error: :immutable }] })
+      end
+    end
   end
 end
