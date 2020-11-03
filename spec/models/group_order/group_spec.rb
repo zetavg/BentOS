@@ -330,5 +330,149 @@ RSpec.describe GroupOrder::Group, type: :model do
       )
     end
   end
+
+  describe 'state machine' do
+    describe 'states' do
+      let(:state) { :open }
+      subject(:group) do
+        group = FactoryBot.create(
+          :group_order_group,
+          name: 'Hello Group',
+          state: state,
+          menu: menu,
+          _really_update: true
+        )
+        group._really_update = false
+        group
+      end
+      let(:menu) do
+        {
+          menu: {
+            sectionUuids: %w[s1]
+          },
+          sections: {
+            s1: { name: 'Section 1', itemUuids: %w[i1] }
+          },
+          items: {
+            i1: { name: 'Item 1', priceSubunits: 0 }
+          }
+        }
+      end
+
+      shared_examples ':name immutable' do
+        it 'validates that :name is not changed' do
+          subject.name = 'Hello Group'
+          expect(subject).to be_valid
+
+          subject.name = 'Hi Group'
+          expect(subject).not_to be_valid
+          expect(subject.errors.details).to have_shape(
+            {
+              base: [
+                {
+                  error: :immutable,
+                  changed_attribute_names: [:name]
+                }
+              ]
+            }
+          )
+        end
+      end
+
+      shared_examples ':name mutable' do
+        it 'allows :menu to be changed' do
+          subject.name = 'Hi Group'
+          expect(subject).to be_valid
+        end
+      end
+
+      shared_examples ':menu immutable' do
+        it 'validates that :menu is not changed' do
+          subject.menu = menu.clone
+          expect(subject).to be_valid
+
+          subject.menu = {
+            menu: {
+              sectionUuids: %w[s1]
+            },
+            sections: {
+              s1: { name: 'Changed Section 1', itemUuids: %w[i1] }
+            },
+            items: {
+              i1: { name: 'Changed Item 1', priceSubunits: 0 }
+            }
+          }
+          expect(subject).not_to be_valid
+          expect(subject.errors.details).to have_shape(
+            {
+              base: [
+                {
+                  error: :immutable,
+                  changed_attribute_names: [:menu]
+                }
+              ]
+            }
+          )
+        end
+      end
+
+      shared_examples ':menu mutable' do
+        it 'allows :menu to be changed' do
+          subject.menu = {
+            menu: {
+              sectionUuids: %w[s1]
+            },
+            sections: {
+              s1: { name: 'Changed Section 1', itemUuids: %w[i1] }
+            },
+            items: {
+              i1: { name: 'Changed Item 1', priceSubunits: 0 }
+            }
+          }
+          expect(subject).to be_valid
+        end
+      end
+
+      describe 'open' do
+        let(:state) { :open }
+
+        it_behaves_like ':name mutable'
+        it_behaves_like ':menu mutable'
+      end
+
+      describe 'locked' do
+        let(:state) { :locked }
+
+        it_behaves_like ':name mutable'
+        it_behaves_like ':menu mutable'
+      end
+
+      describe 'scheduled' do
+        let(:state) { :scheduled }
+
+        it_behaves_like ':name immutable'
+        it_behaves_like ':menu immutable'
+      end
+
+      describe 'arrived' do
+        let(:state) { :arrived }
+
+        it_behaves_like ':name immutable'
+        it_behaves_like ':menu immutable'
+      end
+
+      describe 'completed' do
+        let(:state) { :completed }
+
+        it_behaves_like ':menu immutable'
+      end
+
+      describe 'canceled' do
+        let(:state) { :canceled }
+
+        it_behaves_like ':menu immutable'
+      end
+    end
+  end
 end
 # rubocop:enable Layout/LineLength

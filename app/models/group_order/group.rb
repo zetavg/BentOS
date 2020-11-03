@@ -4,6 +4,7 @@ require Rails.root.join('lib', 'schemas', 'menu_schema')
 
 class GroupOrder::Group < ApplicationRecord
   include AASM
+  include Immutable
 
   monetize :group_minimum_amount_subunit, as: :group_minimum_amount
   monetize :group_maximum_amount_subunit, as: :group_maximum_amount, allow_nil: true
@@ -11,8 +12,15 @@ class GroupOrder::Group < ApplicationRecord
   aasm column: :state, create_scopes: false, whiny_persistence: true do
     state :open, initial: true
     state :locked
+    state :scheduled
+    state :arrived
+    state :completed
+    state :canceled
   end
 
+  immutable unless: -> { ['open', 'locked', nil].include?(state_was) },
+            attributes: [:name, :menu],
+            error_options: -> { { current_state: state_was } }
   immutable unless: -> { state_was.nil? && ['open', nil].include?(state) },
             attributes: [:state],
             message: 'The state of GroupOrder::Order is not meant to be changed directly'

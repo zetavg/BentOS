@@ -10,7 +10,7 @@ module Immutable
 
   class_methods do
     def immutable(**args)
-      validate(if: args[:if]) do |record|
+      validate(if: args[:if], unless: args[:unless]) do |record|
         next if record._really_update
 
         attributes = args[:attributes] || args[:only]
