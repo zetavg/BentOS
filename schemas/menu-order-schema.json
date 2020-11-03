@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "title": "Menu Order",
+  "description": "The schema of the data structure to store a order maded from a menu.",
+  "required": [
+    "items"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of items that are ordered.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "uuid",
+          "quantity"
+        ],
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "The uuid of the ordered item."
+          },
+          "customizations": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Customizations on this item. An object using the customization uuid as key and the customization content as value.",
+            "patternProperties": {
+              ".*": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["options"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the customization item. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+                  },
+                  "options": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Selected customization options. An object using the option uuid as key and the option content as value.",
+                    "patternProperties": {
+                      ".*": {
+                        "type": "object",
+                        "required": ["quantity"],
+                        "properties": {
+                          "quantity": {
+                            "type": "integer",
+                            "description": "The quantity of this option.",
+                            "minimum": 1
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The name of the customization option. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+                          },
+                          "priceSubunits": {
+                            "type": "integer",
+                            "description": "The price of this customization option, in currency subunits. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+                          },
+                          "amountSubunits": {
+                            "type": "integer",
+                            "description": "`priceSubunits * quantity` of this option, in currency subunits. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of this item.",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the ordered item. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+          },
+          "priceSubunits": {
+            "type": "integer",
+            "description": "The origional price of the ordered item (not including customizations), in currency subunits. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+          },
+          "customizationsPrice": {
+            "type": "integer",
+            "description": "The sum of customizations price, in currency subunits. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+          },
+          "amountSubunits": {
+            "type": "integer",
+            "description": "`(priceSubunits + customizationsPrice) * quantity`, in currency subunits. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+          }
+        }
+      }
+    },
+    "amountSubunits": {
+      "type": "integer",
+      "description": "The total amount of this order. This is a snapshot from the menu when the order is created or updated and will be populated by the server."
+    }
+  },
+  "additionalProperties": false
+}

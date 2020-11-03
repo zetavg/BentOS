@@ -81,27 +81,15 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
   alias _reverse! reverse!
 
   def capture!
-    unless wrapped_in_transaction?
-      transaction do
-        lock! && _capture!
-      end
-
-      return
+    transaction do
+      lock! && _capture!
     end
-
-    lock! && _capture!
   end
 
   def reverse!
-    unless wrapped_in_transaction?
-      transaction do
-        lock! && _reverse!
-      end
-
-      return
+    transaction do
+      lock! && _reverse!
     end
-
-    lock! && _reverse!
   end
 
   def accounts_to_lock_during_transaction
@@ -153,10 +141,5 @@ class Accounting::UserAuthorizationHold < ApplicationRecord
       user_remaining_credit_limit: user.remaining_credit_limit + Money.new(amount_subunit_was || 0),
       amount: amount
     )
-  end
-
-  def wrapped_in_transaction?
-    running_inside_transactional_fixtures = DoubleEntry::Locking.configuration.running_inside_transactional_fixtures
-    ActiveRecord::Base.connection.open_transactions > (running_inside_transactional_fixtures ? 1 : 0)
   end
 end

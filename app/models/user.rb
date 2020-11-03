@@ -9,7 +9,13 @@ class User < ApplicationRecord
   has_many :oauth_authentications, dependent: :destroy
   has_many :authorization_holds, class_name: 'Accounting::UserAuthorizationHold', dependent: :destroy
 
-  validates :credit_limit, numericality: { greater_than: 0 }
+  has_many :organized_groups,
+           class_name: 'GroupOrder::Group',
+           foreign_key: :organizer_id,
+           inverse_of: :organizer,
+           dependent: :restrict_with_error
+
+  validates :credit_limit, numericality: { greater_than_or_equal_to: 0 }
 
   def self.from_oauth_authentication(oauth_authentication)
     user = oauth_authentication.user

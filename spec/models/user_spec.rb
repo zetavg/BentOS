@@ -168,7 +168,7 @@ RSpec.describe User, type: :model do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:email) }
-    it { is_expected.to validate_numericality_of(:credit_limit).is_greater_than(0) }
+    it { is_expected.to validate_numericality_of(:credit_limit).is_greater_than_or_equal_to(0) }
   end
 
   describe '#from_oauth_authentication' do

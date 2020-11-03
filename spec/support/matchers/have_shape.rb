@@ -44,11 +44,14 @@ RSpec::Matchers.define :have_shape do |sample|
     case sample
     when Hash
       return actual unless actual.respond_to? :[]
+      return actual unless actual.respond_to? :key?
 
       keys = sample.keys
 
       Hash[
-        keys.map { |k| [k, actual[k]] }
+        keys.map { |k| convert_key_for_hash(k, actual) }
+            .filter { |has_key, _| has_key }
+            .map { |_, k| [k, actual[k]] }
             .map { |k, v| [k, actual_as_sample(sample[k], v)] }
       ]
     when Array
@@ -61,5 +64,13 @@ RSpec::Matchers.define :have_shape do |sample|
     else
       actual
     end
+  end
+
+  def convert_key_for_hash(key, hash)
+    return [true, key] if hash.key?(key)
+    return [true, key.to_s] if key.respond_to?(:to_s) && hash.key?(key.to_s)
+    return [true, key.to_sym] if key.respond_to?(:to_sym) && hash.key?(key.to_sym)
+
+    [false, nil]
   end
 end
