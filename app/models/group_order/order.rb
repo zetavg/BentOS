@@ -5,7 +5,17 @@ require Rails.root.join('lib', 'schemas', 'menu_order_schema')
 # TODO: Try to refactor this
 # rubocop:disable Metrics/ClassLength
 class GroupOrder::Order < ApplicationRecord
+  include AASM
   include Immutable
+
+  aasm column: :state, create_scopes: false, whiny_persistence: true do
+    state :placed, initial: true
+    state :locked
+    state :scheduled
+    state :arrived
+    state :completed
+    state :canceled
+  end
 
   # rubocop:disable Layout/LineLength
   immutable message: 'GroupOrder::Order is not meant to be edited directly, please use `GroupOrder::OrderPlacement` to place a new order and use `GroupOrder::OrderUpdate` to update an existing order'

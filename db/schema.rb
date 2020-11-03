@@ -75,17 +75,17 @@ ActiveRecord::Schema.define(version: 2020_07_25_000007) do
   end
 
   create_table "group_order_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "state", limit: 32, null: false
     t.uuid "organizer_id", null: false
     t.string "name", null: false
     t.boolean "private", default: false, null: false
-    t.jsonb "menu", null: false
-    t.string "state", limit: 32, null: false
     t.datetime "to_be_closed_at", null: false
     t.datetime "expected_delivery_time", null: false
     t.bigint "group_minimum_amount_subunit", default: 0, null: false
     t.integer "group_minimum_sets", default: 0, null: false
     t.bigint "group_maximum_amount_subunit"
     t.integer "group_maximum_sets"
+    t.jsonb "menu", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["organizer_id"], name: "index_group_order_groups_on_organizer_id"
@@ -93,15 +93,18 @@ ActiveRecord::Schema.define(version: 2020_07_25_000007) do
   end
 
   create_table "group_order_orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "user_id", null: false
+    t.string "state", limit: 32, null: false
     t.uuid "group_id", null: false
-    t.jsonb "content", null: false
+    t.uuid "user_id", null: false
     t.boolean "private", default: false, null: false
     t.bigint "amount_subunit", null: false
+    t.jsonb "content", null: false
     t.uuid "authorization_hold_uuid", default: -> { "gen_random_uuid()" }, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["authorization_hold_uuid"], name: "index_group_order_orders_on_authorization_hold_uuid", unique: true
     t.index ["group_id"], name: "index_group_order_orders_on_group_id"
+    t.index ["state"], name: "index_group_order_orders_on_state"
     t.index ["user_id"], name: "index_group_order_orders_on_user_id"
   end
 
